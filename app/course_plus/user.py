@@ -1,0 +1,118 @@
+#coding=utf-8
+from flask import Flask, jsonify, abort, g, make_response, request , url_for
+from flask.ext.restful import Api, Resource
+from flask.ext.httpauth import HTTPBasicAuth
+from sqlalchemy.orm import relationship, backref
+from passlib.apps import custom_app_context as pwd_context
+from itsdangerous import (TimedJSONWebSignatureSerializer
+                          as Serializer, BadSignature, SignatureExpired)
+from app import app,db,api
+import json
+import datetime
+from simple_result import SimpleResult
+
+
+auth = HTTPBasicAuth()
+
+# Model User 用户 对应表:User
+# id->唯一标识
+# username->用户名
+# name->用户姓名
+# password_hash->加密后的密码
+# user_groups->与群组的关联，即每个群组中有哪些用户，只是定义一个外键，不存在群组表中
+class User(db.Model):
+    __tablename__ = 't_user'
+    id = db.Column(db.Integer, primary_key=True)
+    phone = db.Column(db.String(16), unique=True)
+    password = db.Column(db.String(128))
+    nickname = db.Column(db.String(32))
+    icon = db.Column(db.String(32))
+    email = db.Column(db.String(32))
+    qq = db.Column(db.String(32))
+    wechat = db.Column(db.String(32))
+    introduction = db.Column(db.Text)
+    enable = db.Column(db.Integer)
+    createdAt = db.Column(db.DateTime)
+    updateAt = db.Column(db.DateTime)
+
+
+    def hash_password(self, raw_password):
+        self.password = pwd_context.encrypt(raw_password)
+
+    def verify_password(self, raw_password):
+        return pwd_context.verify(raw_password, self.password)
+
+    def generate_auth_token(self, expiration=600):
+        s = Serializer(app.config['SECRET_KEY'], expires_in=expiration)
+        return s.dumps({'id': self.id})
+
+    @staticmethod
+    def verify_auth_token(token):
+        s = Serializer(app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token)
+        except SignatureExpired:
+            return None    # valid token, but expired
+        except BadSignature:
+            return None    # invalid token
+        user = User.query.get(data['id'])
+        return user
+
+
+
+
+# 校验密码
+@auth.verify_password
+def verify_password(username_or_token, password):
+    # first try to authenticate by token
+    user = User.verify_auth_token(username_or_token)
+    if not user:
+        # try to authenticate with username/password
+        user = User.query.filter_by(username=username_or_token).first()
+        if not user or not user.verify_password(password):
+            return False
+    g.user = user
+    return True
+
+@app.route('/api/web/user/sendAuthCode', methods=['POST'])
+def send_auth_code():
+    phone = request.json.get("phone")
+    if phone is None:
+        abort(400)
+    # 发送验证码，这里需要第三方服务器
+    return (jsonify(SimpleResult(1,"发送成功").json()),200)
+
+@app.route('/api/web/user/register', methods=['POST'])
+def register():
+    phone = request.json.get("phone")
+    password = request.json.get("password")
+    verifyCode = request.json.get("verifyCode")
+    if phone is None or password is None or verifyCode is None:
+        abort(400)
+    # 验证验证码
+    user = User.query.filter_by(phone=phone).first()
+    if user:
+        abort(401)
+            
+    user = User()
+    user.phone = phone;
+    user.hash_password(password)
+    user.createdAt = datetime.datetime.now()
+    user.updateAt = user.createdAt
+    user.nickname = "user" + phone
+    db.session.add(user)
+    db.session.commit()
+    token = user.generate_auth_token(6000)
+    g.user = user
+    return (jsonify(SimpleResult(0,token).json()),200)
+
+
+
+@app.errorhandler(400)
+def bad_request(error):
+    return make_response(jsonify(SimpleResult(-1,"缺少参数").json()), 400)
+
+
+@app.errorhandler(401)
+def bad_request(error):
+    return make_response(jsonify(SimpleResult(-1,"用户重复").json()), 401)
