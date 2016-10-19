@@ -1,4 +1,7 @@
 #coding=utf-8
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 from flask import Flask, jsonify, abort, g, make_response, request , url_for
 from flask.ext.restful import Api, Resource
 from flask.ext.httpauth import HTTPBasicAuth
@@ -14,12 +17,6 @@ from simple_result import SimpleResult
 
 auth = HTTPBasicAuth()
 
-# Model User 用户 对应表:User
-# id->唯一标识
-# username->用户名
-# name->用户姓名
-# password_hash->加密后的密码
-# user_groups->与群组的关联，即每个群组中有哪些用户，只是定义一个外键，不存在群组表中
 class User(db.Model):
     __tablename__ = 't_user'
     id = db.Column(db.Integer, primary_key=True)
@@ -32,6 +29,7 @@ class User(db.Model):
     wechat = db.Column(db.String(32))
     introduction = db.Column(db.Text)
     enable = db.Column(db.Integer)
+    gender = db.Column(db.Integer)
     createdAt = db.Column(db.DateTime)
     updateAt = db.Column(db.DateTime)
 
@@ -59,8 +57,6 @@ class User(db.Model):
         return user
 
 
-
-
 # 校验密码
 @auth.verify_password
 def verify_password(username_or_token, password):
@@ -68,11 +64,12 @@ def verify_password(username_or_token, password):
     user = User.verify_auth_token(username_or_token)
     if not user:
         # try to authenticate with username/password
-        user = User.query.filter_by(username=username_or_token).first()
+        user = User.query.filter_by(phone=username_or_token).first()
         if not user or not user.verify_password(password):
             return False
     g.user = user
     return True
+
 
 @app.route('/api/web/user/sendAuthCode', methods=['POST'])
 def send_auth_code():
@@ -99,13 +96,97 @@ def register():
     user.hash_password(password)
     user.createdAt = datetime.datetime.now()
     user.updateAt = user.createdAt
-    user.nickname = "user" + phone
+    user.nickname = "用户" + phone
     db.session.add(user)
     db.session.commit()
     token = user.generate_auth_token(6000)
     g.user = user
     return (jsonify(SimpleResult(0,token).json()),200)
 
+@app.route('/api/web/user/resetPassword', methods=['POST'])
+def resetPassword():
+    phone = request.json.get("phone")
+    password = request.json.get("password")
+    verifyCode = request.json.get("verifyCode")
+    if phone is None or password is None or verifyCode is None:
+        abort(400)
+    # 验证验证码
+    user = User.query.filter_by(phone=phone).first()
+    if not user:
+        return (jsonify(SimpleResult(-1,"手机号未注册").json()),200)
+    else:
+        user.hash_password(password)
+        user.updateAt = datetime.datetime.now()
+        db.session.add(user)
+        db.session.commit()
+    return (jsonify(SimpleResult(0,"重置成功").json()),200)
+
+
+
+@app.route('/api/web/user/checkUserIsValid', methods=['GET'])
+def checkUserIsExist():
+    phone = request.args.get("phone")
+    if phone is None:
+        abort(400)  
+    user = User.query.filter_by(phone=phone).first()
+    if not user:
+        return (jsonify(SimpleResult(0,"手机号可用").json()),200)
+    else:
+        return (jsonify(SimpleResult(-1,"手机号已占用").json()),200)
+
+@app.route('/api/web/user/login', methods=['POST'])
+def login():
+    phone = request.json.get("phone")
+    password = request.json.get("password")
+    if phone is None or password is None:
+        abort(400)
+    user = User.query.filter_by(phone=phone).first()
+    if not user or not user.verify_password(password):
+        return (jsonify(SimpleResult(-1,"账户名或密码错误").json()),200)
+    else:
+        token = user.generate_auth_token(600)
+        g.user = user
+        return (jsonify(SimpleResult(0,token).json()),200)
+
+@app.route('/api/user/user/changePassword', methods=['POST'])
+@auth.login_required
+def changePassword():
+    oldPassword = request.json.get("oldPassword")
+    newPassword = request.json.get("newPassword")
+    if not oldPassword or not newPassword:
+        abort(400)
+    user = g.user
+    if user.verify_password(oldPassword):
+        user.hash_password(newPassword)
+        db.session.add(user)
+        db.session.commit()
+        return (jsonify(SimpleResult(0,"修改成功").json()),200)
+    else:
+        return (jsonify(SimpleResult(-1,"原密码错误").json()),200)
+
+
+@app.route('/api/user/user/updateUserInfo', methods=['POST'])
+@auth.login_required
+def updateUserInfo():
+    nickname = request.json.get("nickname")
+    gender = request.json.get("gender")
+    avatar = request.json.get("avatar")
+    user = g.user
+    if nickname:
+        user.nickname = nickname
+    if gender:
+        user.gender = gender
+    if avatar:
+        user.icon = avatar
+    db.session.add(user)
+    db.session.commit() 
+    return (jsonify(SimpleResult(0,"修改成功").json()),200)
+   
+
+@app.route('/api/resource')
+@auth.login_required
+def get_resource():
+    return jsonify({'data': 'Hello, %s!' % g.user.phone})
 
 
 @app.errorhandler(400)

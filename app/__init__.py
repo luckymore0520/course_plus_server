@@ -12,4 +12,5 @@ app.config['SECRET_KEY'] = 'gao yang zui chou le'
 db = SQLAlchemy(app)
 from app import views
 import course_plus.user
+import course_plus.course
 import config
