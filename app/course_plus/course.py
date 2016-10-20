@@ -224,7 +224,7 @@ def getSpecialList():
     for school in schools:
         schoolDic = {"id":school.id}
         specialityJsonList = []
-        specialityList = Speciality.query.filter_by(school_id = school.id)
+        specialityList = Speciality.query.filter_by(schoolId = school.id)
         for speciality in specialityList:
             specialityJsonList.append(speciality.json())
         schoolDic["specialities"] = specialityJsonList
