@@ -4,18 +4,15 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 from flask import Flask, jsonify, abort, g, make_response, request , url_for
 from flask.ext.restful import Api, Resource
-from flask.ext.httpauth import HTTPBasicAuth
 from sqlalchemy.orm import relationship, backref
 from passlib.apps import custom_app_context as pwd_context
 from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
-from app import app,db,api
+from app import app,db,api,auth
 import json
 import datetime
 from simple_result import SimpleResult
 
-
-auth = HTTPBasicAuth()
 
 class User(db.Model):
     __tablename__ = 't_user'
@@ -32,6 +29,7 @@ class User(db.Model):
     gender = db.Column(db.Integer)
     createdAt = db.Column(db.DateTime)
     updateAt = db.Column(db.DateTime)
+    comments = relationship("Comment", backref = "User")
 
 
     def hash_password(self, raw_password):

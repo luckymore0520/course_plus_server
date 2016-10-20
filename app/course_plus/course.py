@@ -7,7 +7,7 @@ from sqlalchemy import ForeignKey
 from app import app,db,api
 import json
 import datetime
-
+from simple_result import SimpleResult
 
 
 class Author(db.Model):
@@ -37,7 +37,7 @@ class Author(db.Model):
         for courseId in course_ids:
             course = Course.query.get(courseId)
             courses.append(course.briefJson())
-        return courses;
+        return courses
 
     def simpleJson(self):
         return {"name":self.name,"icon":self.icon,"id":self.id}
@@ -181,9 +181,25 @@ class Topic(db.Model):
     deleteAt = db.Column(db.DateTime)
     courseId = db.Column(db.Integer, ForeignKey('t_course.id'))
     authorId = db.Column(db.Integer, ForeignKey('t_author.id'))
+    bodys = relationship("TopicBody", backref = "Topic")
+    comments = relationship("Comment", backref = "Topic")
 
     def json(self):
         return {"name":self.name,"authorId":self.authorId,"id":self.id}
+
+
+class TopicBody(db.Model):
+    __tablename__ = 't_topic_body'
+    id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.Integer)
+    content = db.Column(db.Text)
+    createdAt = db.Column(db.DateTime)
+    updateAt = db.Column(db.DateTime)
+    deleteAt = db.Column(db.DateTime)
+    topicId = db.Column(db.Integer, ForeignKey('t_topic.id'))
+
+    def json(self):
+        return {"id":self.id,"type":self.type,"content":self.content}
 
 
 class Resource(db.Model):
@@ -217,13 +233,13 @@ def getSpecialList():
 
 @app.route('/api/web/course/courseList', methods=['GET'])
 def getCourseList():
-    page = int(request.args.get("page"))
+    page = request.args.get("page")
     limit = request.args.get("limit",20)
     key = request.args.get("key")
-    courses = []
     if not page:
         abort(400)
     courses = []
+    page = int(page)
     if key:
         courses = db.session.query(Course).filter(Course.name.like("%"+key+"%")).limit(limit).offset(limit * (page-1))
     else:
@@ -236,7 +252,7 @@ def getCourseList():
 
 @app.route('/api/web/course/courseDetail', methods=['GET'])
 def getCourseDetail():
-    course_id = int(request.args.get("id"))
+    course_id = request.args.get("id")
     if not course_id:
         abort(400)
     course = Course.query.get(course_id)
@@ -244,6 +260,18 @@ def getCourseDetail():
         return (jsonify(SimpleResult(-1,"课程不存在").json()),200)
     else:
         return (jsonify(course.json()),200)
+    
+
+@app.route('/api/web/course/topicDetail', methods=['GET'])
+def getTopicBody():
+    topic_id = request.args.get("id")
+    if not topic_id:
+        abort(400)
+    topic_body = TopicBody.query.filter(TopicBody.topicId == topic_id).first()
+    if not topic_body:
+        return (jsonify(SimpleResult(-1,"知识点不存在").json()),200)
+    else:
+        return (jsonify(topic_body.json()),200)
 
 
 

@@ -10,7 +10,12 @@ app.config['SQLALCHEMY_DATABASE_URI'] =  config.DB_URL
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 app.config['SECRET_KEY'] = 'gao yang zui chou le'
 db = SQLAlchemy(app)
+auth = HTTPBasicAuth()
 from app import views
 import course_plus.user
 import course_plus.course
+import course_plus.comment
 import config
+
+
+
