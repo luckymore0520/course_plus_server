@@ -1,4 +1,4 @@
-# CodeMining-Server
+# Server for Course+
 
 ##Installation
 
