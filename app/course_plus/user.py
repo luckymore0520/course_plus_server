@@ -28,7 +28,7 @@ class User(db.Model):
     enable = db.Column(db.Integer)
     gender = db.Column(db.Integer)
     createdAt = db.Column(db.DateTime)
-    updateAt = db.Column(db.DateTime)
+    updatedAt = db.Column(db.DateTime)
     comments = relationship("Comment", backref = "User")
 
 
@@ -93,7 +93,7 @@ def register():
     user.phone = phone;
     user.hash_password(password)
     user.createdAt = datetime.datetime.now()
-    user.updateAt = user.createdAt
+    user.updatedAt = user.createdAt
     user.nickname = "用户" + phone
     db.session.add(user)
     db.session.commit()
@@ -114,7 +114,7 @@ def resetPassword():
         return (jsonify(SimpleResult(-1,"手机号未注册").json()),200)
     else:
         user.hash_password(password)
-        user.updateAt = datetime.datetime.now()
+        user.updatedAt = datetime.datetime.now()
         db.session.add(user)
         db.session.commit()
     return (jsonify(SimpleResult(0,"重置成功").json()),200)

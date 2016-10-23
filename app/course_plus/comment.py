@@ -16,7 +16,7 @@ class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text)
     createdAt = db.Column(db.DateTime)
-    updateAt = db.Column(db.DateTime)
+    updatedAt = db.Column(db.DateTime)
     deleteAt = db.Column(db.DateTime)
     topicId = db.Column(db.Integer, ForeignKey('t_topic.id'))
     userId = db.Column(db.Integer, ForeignKey('t_user.id'))
@@ -59,7 +59,7 @@ def postComment():
     comment.parentId = replyId
     comment.topicId = topicId
     comment.createdAt = datetime.datetime.now()
-    comment.updateAt = comment.createdAt
+    comment.updatedAt = comment.createdAt
     comment.rootId = findCommentRootId(replyId)    
     comment.userId = user.id
     db.session.add(comment)
