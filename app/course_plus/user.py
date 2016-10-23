@@ -95,6 +95,7 @@ def register():
     user.createdAt = datetime.datetime.now()
     user.updatedAt = user.createdAt
     user.nickname = "用户" + phone
+    user.enable = 1
     db.session.add(user)
     db.session.commit()
     token = user.generate_auth_token(6000)
