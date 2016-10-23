@@ -94,6 +94,7 @@ def register():
     user.hash_password(password)
     user.createdAt = datetime.datetime.now()
     user.updatedAt = user.createdAt
+    user.gender = 3
     user.nickname = "用户" + phone
     user.enable = 1
     db.session.add(user)
