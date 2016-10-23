@@ -17,7 +17,7 @@ class Comment(db.Model):
     content = db.Column(db.Text)
     createdAt = db.Column(db.DateTime)
     updatedAt = db.Column(db.DateTime)
-    deleteAt = db.Column(db.DateTime)
+    deletedAt = db.Column(db.DateTime)
     topicId = db.Column(db.Integer, ForeignKey('t_topic.id'))
     userId = db.Column(db.Integer, ForeignKey('t_user.id'))
     parentId = db.Column(db.Integer, ForeignKey('t_comment.id'))
