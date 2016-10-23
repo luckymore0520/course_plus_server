@@ -24,7 +24,7 @@ class Author(db.Model):
     introduction = db.Column(db.Text)
     createdAt = db.Column(db.DateTime)
     updatedAt = db.Column(db.DateTime)
-    deleteAt = db.Column(db.DateTime)
+    deletedAt = db.Column(db.DateTime)
     topics = relationship("Topic", backref = "Author")
 
     def courses(self):
@@ -52,7 +52,7 @@ class School(db.Model):
     name = db.Column(db.String(16), unique=True)
     createdAt = db.Column(db.DateTime)
     updatedAt = db.Column(db.DateTime)
-    deleteAt = db.Column(db.DateTime)
+    deletedAt = db.Column(db.DateTime)
     specialities = relationship("Speciality", backref = "School")
 
 class Speciality(db.Model):
@@ -61,7 +61,7 @@ class Speciality(db.Model):
     name = db.Column(db.String(16), unique=True)
     createdAt = db.Column(db.DateTime)
     updatedAt = db.Column(db.DateTime)
-    deleteAt = db.Column(db.DateTime)
+    deletedAt = db.Column(db.DateTime)
     schoolId = db.Column(db.Integer, ForeignKey('t_school.id'))
     courses = relationship("Course", backref = "Speciality")
     def json(self):
@@ -75,7 +75,7 @@ class Course(db.Model):
     introduction = db.Column(db.Text)
     createdAt = db.Column(db.DateTime)
     updatedAt = db.Column(db.DateTime)
-    deleteAt = db.Column(db.DateTime)
+    deletedAt = db.Column(db.DateTime)
     cover = db.Column(db.String(32))
     specialityId = db.Column(db.Integer, ForeignKey('t_speciality.id'))
     topics = relationship("Topic", backref = "Course")
@@ -179,7 +179,7 @@ class Topic(db.Model):
     name = db.Column(db.String(16))
     createdAt = db.Column(db.DateTime)
     updatedAt = db.Column(db.DateTime)
-    deleteAt = db.Column(db.DateTime)
+    deletedAt = db.Column(db.DateTime)
     courseId = db.Column(db.Integer, ForeignKey('t_course.id'))
     authorId = db.Column(db.Integer, ForeignKey('t_author.id'))
     bodys = relationship("TopicBody", backref = "Topic")
@@ -196,7 +196,7 @@ class TopicBody(db.Model):
     content = db.Column(db.Text)
     createdAt = db.Column(db.DateTime)
     updatedAt = db.Column(db.DateTime)
-    deleteAt = db.Column(db.DateTime)
+    deletedAt = db.Column(db.DateTime)
     topicId = db.Column(db.Integer, ForeignKey('t_topic.id'))
 
     def json(self):
@@ -211,7 +211,7 @@ class Resource(db.Model):
     ext = db.Column(db.String(16))
     createdAt = db.Column(db.DateTime)
     updatedAt = db.Column(db.DateTime)
-    deleteAt = db.Column(db.DateTime)
+    deletedAt = db.Column(db.DateTime)
     courseId = db.Column(db.Integer, ForeignKey('t_course.id'))
 
     def json(self):
