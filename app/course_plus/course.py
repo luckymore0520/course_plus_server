@@ -76,6 +76,7 @@ class Course(db.Model):
     createdAt = db.Column(db.DateTime)
     updateAt = db.Column(db.DateTime)
     deleteAt = db.Column(db.DateTime)
+    cover = db.Column(db.String(32))
     specialityId = db.Column(db.Integer, ForeignKey('t_speciality.id'))
     topics = relationship("Topic", backref = "Course")
     resources = relationship("Resource", backref = "Course")
