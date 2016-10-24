@@ -1,5 +1,4 @@
 
-
 class SimpleResult():
     code = 0
     message = ""
@@ -11,3 +10,4 @@ class SimpleResult():
         return {"code":self.code,"message":self.message}
 
     
+

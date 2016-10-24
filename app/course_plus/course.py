@@ -4,7 +4,7 @@ from flask.ext.restful import Api, Resource
 from flask.ext.httpauth import HTTPBasicAuth
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy import ForeignKey
-from app import app,db,api
+from app import app,db,api,getUrlOfKey
 import json
 import datetime
 from simple_result import SimpleResult
@@ -14,13 +14,13 @@ class Author(db.Model):
     __tablename__ = 't_author'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(16), unique=True)
-    icon = db.Column(db.String(16))
-    avatar = db.Column(db.String(16))
+    icon = db.Column(db.String(255))
+    avatar = db.Column(db.String(255))
     phone = db.Column(db.String(16))
     email = db.Column(db.String(64))
     qq = db.Column(db.String(16))
     wechat = db.Column(db.String(32))
-    resourceKey = db.Column(db.String(16))
+    resourceKey = db.Column(db.String(255))
     introduction = db.Column(db.Text)
     createdAt = db.Column(db.DateTime)
     updatedAt = db.Column(db.DateTime)
@@ -39,10 +39,17 @@ class Author(db.Model):
             courses.append(course.briefJson())
         return courses
 
+
+    def actualIcon(self):
+        return getUrlOfKey(self.icon)
+    
+    def actualAvatar(self):
+        return getUrlOfKey(self.avatar)
+
     def simpleJson(self):
-        return {"name":self.name,"icon":self.icon,"id":self.id}
+        return {"name":self.name,"icon":self.actualIcon(),"id":self.id}
     def json(self):
-        return {"name":self.name,"avatar":self.avatar,"id":self.id,"description":self.introduction,"resourceKey":self.resourceKey,"courses":self.courses()}
+        return {"name":self.name,"avatar":self.actualAvatar(),"id":self.id,"description":self.introduction,"resourceKey":self.resourceKey,"courses":self.courses()}
 
     
 
@@ -76,7 +83,7 @@ class Course(db.Model):
     createdAt = db.Column(db.DateTime)
     updatedAt = db.Column(db.DateTime)
     deletedAt = db.Column(db.DateTime)
-    cover = db.Column(db.String(32))
+    cover = db.Column(db.String(255))
     specialityId = db.Column(db.Integer, ForeignKey('t_speciality.id'))
     topics = relationship("Topic", backref = "Course")
     resources = relationship("Resource", backref = "Course")
@@ -96,6 +103,8 @@ class Course(db.Model):
                 topicsDic[authorId] = [topic.json()]
         return topicsDic
 
+    def actualCover(self):
+        return getUrlOfKey(self.cover)
 
     def resourceNum(self):
         count = Resource.query.filter(Resource.courseId == self.id).count()
@@ -156,7 +165,7 @@ class Course(db.Model):
         "resources":self.resources(),
         "topics":self.topics(),
         "authors":self.detail_authors(),
-        "cover":self.cover
+        "cover":self.actualCover()
         }
 
     def simpleJson(self):
@@ -168,7 +177,7 @@ class Course(db.Model):
         "specialityName":self.specialityName(),
         "specialityId":self.specialityId,
         "authors":self.authors(),
-        "cover":self.cover
+        "cover":self.actualCover()
         }
     
     def briefJson(self):
@@ -210,7 +219,7 @@ class Resource(db.Model):
     __tablename__ = 't_attachment'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(32))
-    key = db.Column(db.String(32))
+    key = db.Column(db.String(255))
     ext = db.Column(db.String(16))
     createdAt = db.Column(db.DateTime)
     updatedAt = db.Column(db.DateTime)
