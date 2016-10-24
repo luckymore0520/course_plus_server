@@ -155,7 +155,8 @@ class Course(db.Model):
          "description":self.introduction,
         "resources":self.resources(),
         "topics":self.topics(),
-        "authors":self.detail_authors()
+        "authors":self.detail_authors(),
+        "cover":self.cover
         }
 
     def simpleJson(self):
@@ -166,7 +167,9 @@ class Course(db.Model):
         "schoolName":self.schoolName(),
         "specialityName":self.specialityName(),
         "specialityId":self.specialityId,
-        "authors":self.authors()}
+        "authors":self.authors(),
+        "cover":self.cover
+        }
     
     def briefJson(self):
         return {"id":self.id,
@@ -237,14 +240,17 @@ def getCourseList():
     page = request.args.get("page")
     limit = request.args.get("limit",20)
     key = request.args.get("key")
+    speciality_id = request.args.get("speciality_id")
     if not page:
+        abort(400)
+    if not speciality_id and not key:
         abort(400)
     courses = []
     page = int(page)
     if key:
         courses = db.session.query(Course).filter(Course.name.like("%"+key+"%")).limit(limit).offset(limit * (page-1))
     else:
-        courses = db.session.query(Course).limit(limit).offset(limit * (page-1))
+        courses = db.session.query(Course).filter(Course.specialityId == speciality_id).limit(limit).offset(limit * (page-1))
     courseJsonList = []
     for course in courses:
         courseJsonList.append(course.simpleJson())
