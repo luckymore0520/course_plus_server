@@ -8,7 +8,7 @@ from sqlalchemy.orm import relationship, backref
 from passlib.apps import custom_app_context as pwd_context
 from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
-from app import app,db,api,auth
+from app import app,db,api,auth,getUrlOfKey
 import json
 import datetime
 from simple_result import SimpleResult
@@ -30,7 +30,7 @@ class User(db.Model):
     createdAt = db.Column(db.DateTime)
     updatedAt = db.Column(db.DateTime)
     comments = relationship("Comment", backref = "User")
-
+    token = ""
 
     def hash_password(self, raw_password):
         self.password = pwd_context.encrypt(raw_password)
@@ -40,7 +40,8 @@ class User(db.Model):
 
     def generate_auth_token(self, expiration=600):
         s = Serializer(app.config['SECRET_KEY'], expires_in=expiration)
-        return s.dumps({'id': self.id})
+        self.token = s.dumps({'id': self.id})
+        return self.token
 
     @staticmethod
     def verify_auth_token(token):
@@ -54,6 +55,8 @@ class User(db.Model):
         user = User.query.get(data['id'])
         return user
 
+    def json(self):
+        return {"id":self.id, "nickname":self.nickname, "icon":getUrlOfKey(self.icon),"gender":self.gender,"introduction":self.introduction ,"token":self.token}
 
 # 校验密码
 @auth.verify_password
@@ -101,7 +104,7 @@ def register():
     db.session.commit()
     token = user.generate_auth_token(6000)
     g.user = user
-    return (jsonify(SimpleResult(0,token).json()),200)
+    return (jsonify(user.json()),200)
 
 @app.route('/api/web/user/resetPassword', methods=['POST'])
 def resetPassword():
@@ -146,7 +149,7 @@ def login():
     else:
         token = user.generate_auth_token(600)
         g.user = user
-        return (jsonify(SimpleResult(0,token).json()),200)
+        return (jsonify(user.json()),200)
 
 @app.route('/api/user/user/changePassword', methods=['POST'])
 @auth.login_required
@@ -180,9 +183,8 @@ def updateUserInfo():
         user.icon = avatar
     db.session.add(user)
     db.session.commit() 
-    return (jsonify(SimpleResult(0,"修改成功").json()),200)
+    return (jsonify(user.json()),200)
    
-
 @app.route('/api/resource')
 @auth.login_required
 def get_resource():

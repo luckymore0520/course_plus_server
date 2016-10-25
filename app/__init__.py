@@ -26,7 +26,8 @@ bucket_name = 'course-plus'
 bucket_domain = 'ofjhruj62.bkt.clouddn.com'
 def getUrlOfKey(key):
     #有两种方式构造base_url的形式
-    print(key)
+    if not key:
+        return ""
     base_url = 'http://%s/%s' % (bucket_domain, key)
     #可以设置token过期时间
     private_url = q.private_download_url(base_url, expires=3600)
