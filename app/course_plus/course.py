@@ -247,10 +247,10 @@ def getSpecialList():
 @app.route('/api/web/course/courseList', methods=['GET'])
 def getCourseList():
     page = request.args.get("page")
-    limit = request.args.get("limit",20)
+    limit = request.args.get("limit")
     key = request.args.get("key")
     speciality_id = request.args.get("specialityId")
-    if not page:
+    if not page or not limit:
         abort(400)
     if not speciality_id and not key:
         abort(400)
