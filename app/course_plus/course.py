@@ -274,7 +274,7 @@ def getCourseDetail():
         abort(400)
     course = Course.query.get(course_id)
     if not course:
-        return (jsonify(SimpleResult(-1,"课程不存在").json()),200)
+        return (jsonify(SimpleResult(-1,"课程不存在").json()),401)
     else:
         return (jsonify(course.json()),200)
     
@@ -286,7 +286,7 @@ def getTopicBody():
         abort(400)
     topic_body = TopicBody.query.filter(TopicBody.topicId == topic_id).first()
     if not topic_body:
-        return (jsonify(SimpleResult(-1,"知识点不存在").json()),200)
+        return (jsonify(SimpleResult(-1,"知识点不存在").json()),401)
     else:
         return (jsonify(topic_body.json()),200)
 
