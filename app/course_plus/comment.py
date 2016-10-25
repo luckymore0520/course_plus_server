@@ -76,6 +76,7 @@ def getCommentList():
         abort(400)
     comments = []
     page = int(page)
+    limit = int(limit)
     if comment_id:
         comments = db.session.query(Comment).filter(Comment.rootId == comment_id,Comment.topicId == topic_id).limit(limit).offset(limit * (page-1))
     else:

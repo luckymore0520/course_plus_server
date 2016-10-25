@@ -148,6 +148,7 @@ def checkUserIsExist():
     else:
         return (jsonify(SimpleResult(-1,"手机号已占用").json()),409)
 
+
 @app.route('/api/web/user/login', methods=['POST'])
 def login():
     phone = request.json.get("phone")
@@ -161,6 +162,7 @@ def login():
         token = user.generate_auth_token(600)
         g.user = user
         return (jsonify(user.json()),200)
+
 
 @app.route('/api/user/user/changePassword', methods=['POST'])
 @auth.login_required
