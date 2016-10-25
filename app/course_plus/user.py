@@ -84,7 +84,7 @@ def send_auth_code():
         return (jsonify(SimpleResult(1,"发送成功").json()),200)
     else:
         message = r["errorMessage"]["message"]
-        return (jsonify(SimpleResult(-1,message).json()),401)
+        return (jsonify(SimpleResult(-1,message).json()),400)
 
     # 发送验证码，这里需要第三方服务器
 
@@ -98,7 +98,7 @@ def register():
     params = {'phonenumber': phone, 'verifyCode': verifyCode}
     r = requests.post("http://www.mebox.wiki/index.php/Home/SMS/verifyCode", data=params).json()
     if r["result"] == 0:
-        return (jsonify(SimpleResult(-1,"验证失败").json()),401)
+        return (jsonify(SimpleResult(-1,"验证失败").json()),400)
     # 验证验证码
     user = User.query.filter_by(phone=phone).first()
     if user:
@@ -127,7 +127,7 @@ def resetPassword():
     # 验证验证码
     user = User.query.filter_by(phone=phone).first()
     if not user:
-        return (jsonify(SimpleResult(-1,"手机号未注册").json()),401)
+        return (jsonify(SimpleResult(-1,"手机号未注册").json()),400)
     else:
         user.hash_password(password)
         user.updatedAt = datetime.datetime.now()
@@ -146,7 +146,7 @@ def checkUserIsExist():
     if not user:
         return (jsonify(SimpleResult(0,"手机号可用").json()),200)
     else:
-        return (jsonify(SimpleResult(-1,"手机号已占用").json()),401)
+        return (jsonify(SimpleResult(-1,"手机号已占用").json()),409)
 
 @app.route('/api/web/user/login', methods=['POST'])
 def login():
@@ -176,7 +176,7 @@ def changePassword():
         db.session.commit()
         return (jsonify(SimpleResult(0,"修改成功").json()),200)
     else:
-        return (jsonify(SimpleResult(-1,"原密码错误").json()),401)
+        return (jsonify(SimpleResult(-1,"原密码错误").json()),400)
 
 
 @app.route('/api/user/user/updateUserInfo', methods=['POST'])
@@ -210,4 +210,4 @@ def bad_request(error):
 
 @app.errorhandler(401)
 def bad_request(error):
-    return make_response(jsonify(SimpleResult(-1,"用户重复").json()), 401)
+    return make_response(jsonify(SimpleResult(-1,"用户重复").json()), 409)
