@@ -11,6 +11,7 @@ from itsdangerous import (TimedJSONWebSignatureSerializer
 from app import app,db,api,auth,getUrlOfKey
 import json
 import datetime
+import requests
 from simple_result import SimpleResult
 
 
@@ -77,8 +78,15 @@ def send_auth_code():
     phone = request.json.get("phone")
     if phone is None:
         abort(400)
+    params = {'phonenumber': phone, 'coursePlus': 1}
+    r = requests.post("http://www.mebox.wiki/index.php/Home/SMS/sendCode", data=params).json()
+    if r["result"] == 1:
+        return (jsonify(SimpleResult(1,"发送成功").json()),200)
+    else:
+        message = r["errorMessage"]["message"]
+        return (jsonify(SimpleResult(-1,message).json()),200)
+
     # 发送验证码，这里需要第三方服务器
-    return (jsonify(SimpleResult(1,"发送成功").json()),200)
 
 @app.route('/api/web/user/register', methods=['POST'])
 def register():
@@ -87,11 +95,14 @@ def register():
     verifyCode = request.json.get("verifyCode")
     if phone is None or password is None or verifyCode is None:
         abort(400)
+    params = {'phonenumber': phone, 'verifyCode': verifyCode}
+    r = requests.post("http://www.mebox.wiki/index.php/Home/SMS/verifyCode", data=params).json()
+    if r["result"] == 0:
+        return (jsonify(SimpleResult(-1,"验证失败").json()),200)
     # 验证验证码
     user = User.query.filter_by(phone=phone).first()
     if user:
-        abort(401)
-            
+        abort(401)       
     user = User()
     user.phone = phone;
     user.hash_password(password)
