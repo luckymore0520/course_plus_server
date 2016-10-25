@@ -249,7 +249,7 @@ def getCourseList():
     page = request.args.get("page")
     limit = request.args.get("limit",20)
     key = request.args.get("key")
-    speciality_id = request.args.get("speciality_id")
+    speciality_id = request.args.get("specialityId")
     if not page:
         abort(400)
     if not speciality_id and not key:

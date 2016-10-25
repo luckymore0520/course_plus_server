@@ -70,8 +70,8 @@ def postComment():
 def getCommentList():
     page = request.args.get("page")
     limit = request.args.get("limit",20)
-    comment_id = request.args.get("comment_id")
-    topic_id = request.args.get("topic_id")
+    comment_id = request.args.get("commentId")
+    topic_id = request.args.get("topicId")
     if not page or not topic_id:
         abort(400)
     comments = []
