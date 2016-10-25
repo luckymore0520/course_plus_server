@@ -256,6 +256,7 @@ def getCourseList():
         abort(400)
     courses = []
     page = int(page)
+    limit = int(limit)
     if key:
         courses = db.session.query(Course).filter(Course.name.like("%"+key+"%")).limit(limit).offset(limit * (page-1))
     else:
