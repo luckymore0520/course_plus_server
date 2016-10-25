@@ -69,10 +69,10 @@ def postComment():
 @app.route('/api/web/comment/getCommentList', methods=['GET'])
 def getCommentList():
     page = request.args.get("page")
-    limit = request.args.get("limit",20)
+    limit = request.args.get("limit")
     comment_id = request.args.get("commentId")
     topic_id = request.args.get("topicId")
-    if not page or not topic_id:
+    if not page or not topic_id or not limit:
         abort(400)
     comments = []
     page = int(page)
