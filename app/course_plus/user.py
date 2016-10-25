@@ -145,7 +145,7 @@ def login():
         abort(400)
     user = User.query.filter_by(phone=phone).first()
     if not user or not user.verify_password(password):
-        return (jsonify(SimpleResult(-1,"账户名或密码错误").json()),200)
+        return (jsonify(SimpleResult(-1,"账户名或密码错误").json()),400)
     else:
         token = user.generate_auth_token(600)
         g.user = user
@@ -194,6 +194,7 @@ def get_resource():
 @app.errorhandler(400)
 def bad_request(error):
     return make_response(jsonify(SimpleResult(-1,"缺少参数").json()), 400)
+
 
 
 @app.errorhandler(401)
