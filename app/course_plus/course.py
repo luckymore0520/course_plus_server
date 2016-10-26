@@ -227,7 +227,7 @@ class Resource(db.Model):
     courseId = db.Column(db.Integer, ForeignKey('t_course.id'))
 
     def json(self):
-        return {"id":self.id,"key":self.key,"name":self.name,"ext":self.ext}
+        return {"id":self.id,"key":getUrlOfKey(self.key),"name":self.name,"ext":self.ext}
 
 
 @app.route('/api/web/course/speciality', methods=['GET'])
