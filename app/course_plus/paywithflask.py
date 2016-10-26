@@ -19,9 +19,6 @@ def do_charge():
         success_url='http://www.yourdomain.com/success',
         cancel_url='http://www.yourdomain.com/cancel'
     )   
-    else:
-        extra = dict()
-
     if isinstance(params, dict):
         params['order_no'] = orderno
         params['app'] = dict(id='app_jnz9COjH08O4vLaD')
