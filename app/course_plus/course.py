@@ -4,7 +4,7 @@ from flask.ext.restful import Api, Resource
 from flask.ext.httpauth import HTTPBasicAuth
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy import ForeignKey
-from app import app,db,api,getUrlOfKey
+from app import app,db,api,getUrlOfKey,auth
 import json
 import datetime
 from simple_result import SimpleResult
@@ -20,11 +20,11 @@ class Author(db.Model):
     email = db.Column(db.String(64))
     qq = db.Column(db.String(16))
     wechat = db.Column(db.String(32))
-    resourceKey = db.Column(db.String(255))
     introduction = db.Column(db.Text)
     createdAt = db.Column(db.DateTime)
     updatedAt = db.Column(db.DateTime)
     deletedAt = db.Column(db.DateTime)
+    contactCost = db.Column(db.Integer)
     topics = relationship("Topic", backref = "Author")
 
     def courses(self):
@@ -48,8 +48,15 @@ class Author(db.Model):
 
     def simpleJson(self):
         return {"name":self.name,"icon":self.actualIcon(),"id":self.id}
+
     def json(self):
-        return {"name":self.name,"avatar":self.actualAvatar(),"id":self.id,"description":self.introduction,"resourceKey":self.resourceKey,"courses":self.courses()}
+        resource = Resource.query.filter(Resource.authorId == self.id).first()
+        attachmentId = None
+        cost = 0
+        if resource:
+            attachmentId = resource.id
+            cost = resource.cost
+        return {"name":self.name,"avatar":self.actualAvatar(),"id":self.id,"description":self.introduction,"attachmentId":attachmentId,"resourceCost":cost,"contactCost":self.contactCost,"courses":self.courses()}
 
     
 
@@ -215,6 +222,19 @@ class TopicBody(db.Model):
         return {"id":self.id,"type":self.type,"content":self.content}
 
 
+
+
+class TradeRecord(db.Model):
+    __tablename__ = 't_trade'
+    id = db.Column(db.Integer, primary_key=True)
+    createdAt = db.Column(db.DateTime)
+    updatedAt = db.Column(db.DateTime)
+    deletedAt = db.Column(db.DateTime)
+    cost = db.Column(db.Integer)
+    attachmentId = db.Column(db.Integer, ForeignKey('t_attachment.id'))
+    userId = db.Column(db.Integer, ForeignKey('t_user.id'))
+
+
 class Resource(db.Model):
     __tablename__ = 't_attachment'
     id = db.Column(db.Integer, primary_key=True)
@@ -224,11 +244,30 @@ class Resource(db.Model):
     createdAt = db.Column(db.DateTime)
     updatedAt = db.Column(db.DateTime)
     deletedAt = db.Column(db.DateTime)
+    cost = db.Column(db.Integer)
+    authorId = db.Column(db.Integer, ForeignKey('t_author.id'))
     courseId = db.Column(db.Integer, ForeignKey('t_course.id'))
 
     def json(self):
-        return {"id":self.id,"key":getUrlOfKey(self.key),"name":self.name,"ext":self.ext}
+        return {"id":self.id,"cost":self.cost,"resourceKey":self.key,"name":self.name,"ext":self.ext}
 
+
+@app.route('/api/user/resource/getDownloadUrl', methods=['GET'])
+@auth.login_required
+def getKeyUrl():
+    id = request.args.get("id")
+    if not id:
+        abort(400)
+    attachment = Resource.query.get(id)
+    key = attachment.key
+    if attachment.cost == 0:
+        return (jsonify(SimpleResult(0,getUrlOfKey(key)).json()),400)
+    trade = db.session.query(TradeRecord).filter(TradeRecord.attachmentId == id).first()
+    if not trade:
+        return (jsonify(SimpleResult(-1,"该资料并未被购买").json()),400)
+    return (jsonify(SimpleResult(0,getUrlOfKey(key)).json()),400)
+
+    
 
 @app.route('/api/web/course/speciality', methods=['GET'])
 def getSpecialList():
@@ -266,6 +305,7 @@ def getCourseList():
         courseJsonList.append(course.simpleJson())
     print(courseJsonList)
     return (json.dumps(courseJsonList),200)
+
 
 @app.route('/api/web/course/courseDetail', methods=['GET'])
 def getCourseDetail():
