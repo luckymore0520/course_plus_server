@@ -186,6 +186,8 @@ def getUserInfo():
     user = g.user
     return (jsonify(user.json()),200)
 
+
+
 @app.route('/api/user/user/updateUserInfo', methods=['POST'])
 @auth.login_required
 def updateUserInfo():
@@ -215,6 +217,8 @@ def bad_request(error):
 
 
 
-@app.errorhandler(401)
+@app.errorhandler(409)
 def bad_request(error):
     return make_response(jsonify(SimpleResult(-1,"用户重复").json()), 409)
+
+
