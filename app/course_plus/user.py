@@ -180,6 +180,11 @@ def changePassword():
     else:
         return (jsonify(SimpleResult(-1,"原密码错误").json()),400)
 
+@app.route('/api/user/user/getUserInfo', methods=['GET'])
+@auth.login_required
+def getUserInfo():
+    user = g.user
+    return (jsonify(user.json()),200)
 
 @app.route('/api/user/user/updateUserInfo', methods=['POST'])
 @auth.login_required

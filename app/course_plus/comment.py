@@ -65,7 +65,7 @@ def postComment():
     comment.userId = user.id
     db.session.add(comment)
     db.session.commit() 
-    return (jsonify(SimpleResult(0,"发布成功").json()),200)
+    return (jsonify(comment.json()),200)
 
 @app.route('/api/web/comment/getCommentList', methods=['GET'])
 def getCommentList():
