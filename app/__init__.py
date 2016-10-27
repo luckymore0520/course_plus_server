@@ -40,7 +40,6 @@ import course_plus.user
 import course_plus.course
 import course_plus.comment
 import course_plus.paywithflask
-import course_plus.simple_result
 import config
 
 @auth.error_handler
