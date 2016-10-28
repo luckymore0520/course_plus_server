@@ -325,7 +325,7 @@ def getKeyUrl():
     trade = db.session.query(TradeRecord).filter(TradeRecord.attachmentId == id, TradeRecord.userId == g.user.id).first()
     if not trade:
         return (jsonify(SimpleResult(-1,"该资料并未被购买").json()),400)
-    return (jsonify(SimpleResult(0,getUrlOfKey(key)).json()),400)
+    return (jsonify(SimpleResult(0,getUrlOfKey(key)).json()),200)
 
     
 
