@@ -227,11 +227,14 @@ class TopicBody(db.Model):
 class TradeRecord(db.Model):
     __tablename__ = 't_trade'
     id = db.Column(db.Integer, primary_key=True)
+    orderNo = db.Column(db.String(32))
+    orderStatus = db.Column(db.Integer)  #0未支付 1已支付
     createdAt = db.Column(db.DateTime)
     updatedAt = db.Column(db.DateTime)
     deletedAt = db.Column(db.DateTime)
     cost = db.Column(db.Integer)
     attachmentId = db.Column(db.Integer, ForeignKey('t_attachment.id'))
+    authorId = db.Column(db.Integer, ForeignKey('t_author.id'))
     userId = db.Column(db.Integer, ForeignKey('t_user.id'))
 
 
