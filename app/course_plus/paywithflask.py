@@ -21,11 +21,13 @@ import datetime
 def do_charge():
     authorId = request.json.get("authorId")
     resourceId = request.json.get("resourceId")
+    courseId = request.json.get("courseId")
     amount = request.json.get("amount")
     channel = request.json.get("channel")
+    
     if not authorId and not resourceId:
         abort(400)
-    if not channel or not amount:
+    if not channel or not amount or not courseId:
         abort(400)
     params = {"amount":amount,"channel":channel}
     orderno = ''.join(random.sample(string.ascii_letters + string.digits, 8))
@@ -35,6 +37,7 @@ def do_charge():
     record.authorId = authorId
     record.attachmentId = resourceId
     record.cost = amount
+    record.courseId = courseId
     record.createdAt = datetime.datetime.now()
     record.updatedAt = record.createdAt
     record.orderStatus = 0
@@ -92,7 +95,7 @@ def checkTradeStatus():
         abort(400)
     record = TradeRecord.query.get(id)
     if (record.orderStatus == 1):
-       return make_response(jsonify(SimpleResult(1,"支付成功").json()), 200)
+       return make_response(jsonify(record.json()), 200)
     else:
        return make_response(jsonify(SimpleResult(-1,"支付未成功").json()), 405)
 

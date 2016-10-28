@@ -235,8 +235,16 @@ class TradeRecord(db.Model):
     cost = db.Column(db.Integer)
     attachmentId = db.Column(db.Integer, ForeignKey('t_attachment.id'))
     authorId = db.Column(db.Integer, ForeignKey('t_author.id'))
+    courseId = db.Column(db.Integer, ForeignKey('t_course.id'))
     userId = db.Column(db.Integer, ForeignKey('t_user.id'))
+    
 
+    def json(self):    
+        attatchmentUrl = ""
+        if self.attachmentId:
+            attatchmentUrl = getUrlOfKey(self.attachmentId)
+        return {"id":self.id, "courseId":self.courseId,"attatchmentUrl":attatchmentUrl,"authorId":self.authorId,"attachmentId":self.attachmentId}
+    
 
 class Resource(db.Model):
     __tablename__ = 't_attachment'
@@ -253,6 +261,55 @@ class Resource(db.Model):
 
     def json(self):
         return {"id":self.id,"cost":self.cost,"resourceKey":self.key,"name":self.name,"ext":self.ext}
+
+
+class Question(db.Model):
+    __tablename__ = 't_question'
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text)
+    replyContent = db.Column(db.Text)
+    createdAt = db.Column(db.DateTime)
+    updatedAt = db.Column(db.DateTime)
+    deletedAt = db.Column(db.DateTime)
+    userEmail = db.Column(db.String(255))
+    userId = db.Column(db.Integer, ForeignKey('t_user.id'))
+    authorId = db.Column(db.Integer, ForeignKey('t_author.id'))
+
+
+@app.route('/api/user/author/publishQuestion', methods=['POST'])
+@auth.login_required
+def publishQuestion():
+    content = request.json.get("content")
+    userEmail = request.json.get("email")
+    userId = g.user.id
+    authorId = request.json.get("authorId")
+    if not authorId or not content or not userEmail: 
+        abort(400)
+    trade = TradeRecord.query.filter(TradeRecord.authorId == authorId,TradeRecord.userId == g.user.id, TradeRecord.deletedAt == None).first()
+    if trade:
+        trade.deletedAt = datetime.datetime.now()
+        db.session.add(trade)
+        question = Question()
+        question.content = content
+        question.userEmail = userEmail
+        question.userId = userId
+        question.authorId = authorId
+        db.session.add(question)
+        db.session.commit()
+        return (jsonify(SimpleResult(0,"提问成功").json()),200)    
+    return (jsonify(SimpleResult(-1,"没有提问权限").json()),400)
+
+@app.route('/api/user/author/getQuestionChance', methods=['GET'])
+@auth.login_required
+def getQuestionChance():
+    authorId = request.args.get("authorId")
+    if not authorId:
+        abort(400)
+    trade = TradeRecord.query.filter(TradeRecord.authorId == authorId,TradeRecord.userId == g.user.id, TradeRecord.deletedAt == None).first()
+    if trade:
+        return (jsonify(trade.json()),200)    
+    return (jsonify(SimpleResult(-1,"没有提问权限").json()),400)
+
 
 
 @app.route('/api/user/resource/getDownloadUrl', methods=['GET'])
