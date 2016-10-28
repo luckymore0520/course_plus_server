@@ -73,7 +73,7 @@ def webhooks():
     if event['type'] == 'charge.succeeded':
         charge = event['data']['object']
         recordId = charge['body']
-        record = Trade.query.get(recordId)
+        record = TradeRecord.query.get(recordId)
         if record:
             record.orderStatus = 1
         db.session.add(record)
