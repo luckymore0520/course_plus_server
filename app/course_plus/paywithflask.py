@@ -41,7 +41,7 @@ def do_charge():
     db.session.add(record)
     db.session.commit() 
     extra = dict(
-        success_url='http://localhost:3000/public/pay.html?id='+record.id,
+        success_url='http://localhost:3000/public/pay.html?id='+str(record.id),
         # cancel_url='http://www.yourdomain.com/cancel'
     )   
     subject = ""
