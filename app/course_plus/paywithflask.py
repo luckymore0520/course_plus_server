@@ -5,6 +5,7 @@ from flask import Flask, jsonify, abort, g, make_response, request , url_for, Re
 import json
 import random
 import string
+from sqlalchemy import ForeignKey
 from app import app,db,api,getUrlOfKey,auth
 from course import Resource
 from course import Author
@@ -99,6 +100,37 @@ def checkTradeStatus():
     else:
        return make_response(jsonify(SimpleResult(-1,"支付未成功").json()), 405)
 
+
+
+class FeedBack(db.Model):
+    __tablename__ = 't_feedback'
+    id = db.Column(db.Integer, primary_key=True)
+    createdAt = db.Column(db.DateTime)
+    updatedAt = db.Column(db.DateTime)
+    deletedAt = db.Column(db.DateTime)
+    content = db.Column(db.Text)
+    tradeId = db.Column(db.Integer, ForeignKey('t_trade.id'))
+    userId = db.Column(db.Integer, ForeignKey('t_user.id'))
+
+
+@app.route('/api/user/feedback/publishFeedBack', methods=['POST'])
+@auth.login_required
+def publishFeedback():
+    content = request.json.get("content")
+    tradeId = request.json.get("tradeId")
+    if not content or not tradeId:
+        abort(400)
+    feedBack = FeedBack()
+    feedBack.createdAt = datetime.datetime.now()
+    feedBack.updatedAt = feedBack.createdAt
+    feedBack.content = content
+    feedBack.tradeId = tradeId
+    feedBack.userId = g.user.id
+    db.session.add(feedBack)
+    db.session.commit()
+    return make_response(jsonify(SimpleResult(0,"发布成功").json()), 405)
+ 
+    
 
 @app.errorhandler(400)
 def bad_request(error):
