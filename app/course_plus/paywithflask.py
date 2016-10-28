@@ -42,16 +42,21 @@ def do_charge():
     db.session.commit() 
     extra = dict(
         success_url='http://www.yourdomain.com/success',
-        recordId = record.id
         # cancel_url='http://www.yourdomain.com/cancel'
     )   
+    subject = ""
+    body = record.id
+    if authorId:
+        subject = "咨询费用"
+    if resourceId:
+        subject = "course+资料下载"
     if isinstance(params, dict):
         params['order_no'] = orderno
         params['app'] = dict(id='app_jnz9COjH08O4vLaD')
         params['currency'] = 'cny'
         params['client_ip'] = '127.0.0.1'
-        params['subject'] = 'course+资料下载'
-        params['body'] = 'Your Body'
+        params['subject'] = subject
+        params['body'] = body
         params['extra'] = extra
     print params
     pingpp.api_key = 'sk_test_OWrPOCPm94q5j5qXLO5e1OO4'
@@ -67,11 +72,10 @@ def webhooks():
     event = request.get_json()
     if event['type'] == 'charge.succeeded':
         charge = event['data']['object']
-        recordId = charge['extra']['recordId']
+        recordId = charge['body']
         record = Trade.query.get(recordId)
-        if record :
+        if record:
             record.orderStatus = 1
-        
         db.session.add(record)
         db.session.commit()
         return Response(status=200)
@@ -85,7 +89,7 @@ def checkTradeStatus():
     id = request.args.get("id")
     if not id:
         abort(400)
-    record = Trade.query.get(id)
+    record = TradeRecord.query.get(id)
     if (record.orderStatus == 1):
        return make_response(jsonify(SimpleResult(1,"支付成功").json()), 200)
     else:
