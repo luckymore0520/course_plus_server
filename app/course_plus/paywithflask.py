@@ -16,8 +16,8 @@ def do_charge():
     params = request.get_json()
     orderno = ''.join(random.sample(string.ascii_letters + string.digits, 8))
     extra = dict(
-        success_url='http://www.yourdomain.com/success',
-        cancel_url='http://www.yourdomain.com/cancel'
+        success_url='http://www.yourdomain.com/success'
+        # cancel_url='http://www.yourdomain.com/cancel'
     )   
     if isinstance(params, dict):
         params['order_no'] = orderno
