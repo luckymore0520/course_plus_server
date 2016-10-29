@@ -45,10 +45,10 @@ def do_charge():
     )   
     subject = ""
     body = record.id
-    if authorId:
-        subject = "咨询费用"
     if resourceId:
         subject = "course+资料下载"
+    else:
+        subject = "咨询费用"
     if isinstance(params, dict):
         params['order_no'] = orderno
         params['app'] = dict(id='app_jnz9COjH08O4vLaD')
