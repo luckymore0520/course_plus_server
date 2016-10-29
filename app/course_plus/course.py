@@ -234,17 +234,16 @@ class TradeRecord(db.Model):
     deletedAt = db.Column(db.DateTime)
     cost = db.Column(db.Integer)
     attachmentId = db.Column(db.Integer, ForeignKey('t_attachment.id'))
-    authorId = db.Column(db.Integer, ForeignKey('t_author.id'))
-    courseId = db.Column(db.Integer, ForeignKey('t_course.id'))
+    topicId = db.Column(db.Integer, ForeignKey('t_topic.id'))
     userId = db.Column(db.Integer, ForeignKey('t_user.id'))
     
-
     def json(self):    
         attachmentUrl = ""
         if self.attachmentId:
             attachment = Resource.query.get(self.attachmentId)
             attachmentUrl = getUrlOfKey(attachment.key)
-        return {"id":self.id, "courseId":self.courseId,"attachmentUrl":attachmentUrl,"authorId":self.authorId,"attachmentId":self.attachmentId}
+        topic = Topic.query.get(self.topicId)
+        return {"id":self.id,"topicId":self.topicId,"courseId":topic.courseId,"attachmentUrl":attachmentUrl,"authorId":topic.authorId,"attachmentId":self.attachmentId}
     
 
 class Resource(db.Model):

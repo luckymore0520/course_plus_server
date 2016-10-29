@@ -20,25 +20,20 @@ import datetime
 @app.route('/api/user/pay', methods=['POST'])
 @auth.login_required
 def do_charge():
-    authorId = request.json.get("authorId")
     resourceId = request.json.get("resourceId")
-    courseId = request.json.get("courseId")
+    topicId = request.json.get("topicId")
     amount = request.json.get("amount")
     channel = request.json.get("channel")
-    
-    if not authorId and not resourceId:
-        abort(400)
-    if not channel or not amount or not courseId:
+    if not channel or not amount or not topicId:
         abort(400)
     params = {"amount":amount,"channel":channel}
     orderno = ''.join(random.sample(string.ascii_letters + string.digits, 8))
     record = TradeRecord()
     record.orderNo = orderno
     record.userId = g.user.id
-    record.authorId = authorId
     record.attachmentId = resourceId
     record.cost = amount
-    record.courseId = courseId
+    record.topicId = topicId
     record.createdAt = datetime.datetime.now()
     record.updatedAt = record.createdAt
     record.orderStatus = 0
