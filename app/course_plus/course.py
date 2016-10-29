@@ -287,10 +287,15 @@ def publishQuestion():
     authorId = request.json.get("authorId")
     if not authorId or not content or not userEmail or not topicId: 
         abort(400)
-    trade = TradeRecord.query.filter(TradeRecord.authorId == authorId,TradeRecord.userId == g.user.id, TradeRecord.deletedAt == None).first()
-    if trade:
-        trade.deletedAt = datetime.datetime.now()
-        db.session.add(trade)
+    trade_list = TradeRecord.query.filter(TradeRecord.userId == g.user.id, TradeRecord.orderStatus == 1, TradeRecord.deletedAt == None)
+    targetTrade = None
+    for trade in trade_list:
+        if trade.authorId == authorId:
+            targetTrade = trade
+            break
+    if targetTrade:
+        targetTrade.deletedAt = datetime.datetime.now()
+        db.session.add(targetTrade)
         question = Question()
         question.content = content
         question.userEmail = userEmail
@@ -308,9 +313,10 @@ def getQuestionChance():
     authorId = request.args.get("authorId")
     if not authorId:
         abort(400)
-    trade = TradeRecord.query.filter(TradeRecord.authorId == authorId,TradeRecord.userId == g.user.id, TradeRecord.orderStatus == 1, TradeRecord.deletedAt == None).first()
-    if trade:
-        return (jsonify(trade.json()),200)    
+    trade_list = TradeRecord.query.filter(TradeRecord.userId == g.user.id, TradeRecord.orderStatus == 1, TradeRecord.deletedAt == None)
+    for trade in trade_list:
+        if trade.authorId == authorId:
+            return (jsonify(trade.json()),200)    
     return (jsonify(SimpleResult(-1,"没有提问权限").json()),400)
 
 
