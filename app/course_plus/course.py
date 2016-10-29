@@ -274,6 +274,7 @@ class Question(db.Model):
     deletedAt = db.Column(db.DateTime)
     userEmail = db.Column(db.String(255))
     userId = db.Column(db.Integer, ForeignKey('t_user.id'))
+    topicId = db.Column(db.Integer, ForeignKey('t_topic.id'))
     authorId = db.Column(db.Integer, ForeignKey('t_author.id'))
 
 
@@ -283,8 +284,9 @@ def publishQuestion():
     content = request.json.get("content")
     userEmail = request.json.get("email")
     userId = g.user.id
+    topicId = request.json.get("topicId")
     authorId = request.json.get("authorId")
-    if not authorId or not content or not userEmail: 
+    if not authorId or not content or not userEmail or not topicId: 
         abort(400)
     trade = TradeRecord.query.filter(TradeRecord.authorId == authorId,TradeRecord.userId == g.user.id, TradeRecord.deletedAt == None).first()
     if trade:
@@ -295,6 +297,7 @@ def publishQuestion():
         question.userEmail = userEmail
         question.userId = userId
         question.authorId = authorId
+        question.topicId = topicId
         db.session.add(question)
         db.session.commit()
         return (jsonify(SimpleResult(0,"提问成功").json()),200)    
