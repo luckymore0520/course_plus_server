@@ -287,6 +287,7 @@ def publishQuestion():
     authorId = request.json.get("authorId")
     if not authorId or not content or not userEmail or not topicId: 
         abort(400)
+    authorId = int(authorId)
     trade_list = TradeRecord.query.filter(TradeRecord.userId == g.user.id, TradeRecord.orderStatus == 1, TradeRecord.deletedAt == None)
     targetTrade = None
     for trade in trade_list:
@@ -314,6 +315,7 @@ def getQuestionChance():
     authorId = request.args.get("authorId")
     if not authorId:
         abort(400)
+    authorId = int(authorId)
     trade_list = TradeRecord.query.filter(TradeRecord.userId == g.user.id, TradeRecord.orderStatus == 1, TradeRecord.deletedAt == None)
     for trade in trade_list:
         topic = Topic.query.get(trade.topicId)
