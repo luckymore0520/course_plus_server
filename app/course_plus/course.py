@@ -240,11 +240,11 @@ class TradeRecord(db.Model):
     
 
     def json(self):    
-        attatchmentUrl = ""
+        attachmentUrl = ""
         if self.attachmentId:
-            attachment = TradeRecord.query.get(self.attachmentId)
-            attatchmentUrl = getUrlOfKey(attachment.key)
-        return {"id":self.id, "courseId":self.courseId,"attachmentUrl":attatchmentUrl,"authorId":self.authorId,"attachmentId":self.attachmentId}
+            attachment = Resource.query.get(self.attachmentId)
+            attachmentUrl = getUrlOfKey(attachment.key)
+        return {"id":self.id, "courseId":self.courseId,"attachmentUrl":attachmentUrl,"authorId":self.authorId,"attachmentId":self.attachmentId}
     
 
 class Resource(db.Model):
