@@ -289,9 +289,10 @@ def publishQuestion():
         abort(400)
     trade_list = TradeRecord.query.filter(TradeRecord.userId == g.user.id, TradeRecord.orderStatus == 1, TradeRecord.deletedAt == None)
     targetTrade = None
-    for trade in trade_list:
-        if trade.authorId == authorId:
-            targetTrade = trade
+     for trade in trade_list:
+        topic = Topic.query.get(trade.topicId)
+        if topic.authorId == authorId:
+            targetTrade = trade 
             break
     if targetTrade:
         targetTrade.deletedAt = datetime.datetime.now()
@@ -315,7 +316,8 @@ def getQuestionChance():
         abort(400)
     trade_list = TradeRecord.query.filter(TradeRecord.userId == g.user.id, TradeRecord.orderStatus == 1, TradeRecord.deletedAt == None)
     for trade in trade_list:
-        if trade.authorId == authorId:
+        topic = Topic.query.get(trade.topicId)
+        if topic.authorId == authorId:
             return (jsonify(trade.json()),200)    
     return (jsonify(SimpleResult(-1,"没有提问权限").json()),400)
 
