@@ -289,7 +289,7 @@ def publishQuestion():
         abort(400)
     trade_list = TradeRecord.query.filter(TradeRecord.userId == g.user.id, TradeRecord.orderStatus == 1, TradeRecord.deletedAt == None)
     targetTrade = None
-     for trade in trade_list:
+    for trade in trade_list:
         topic = Topic.query.get(trade.topicId)
         if topic.authorId == authorId:
             targetTrade = trade 
