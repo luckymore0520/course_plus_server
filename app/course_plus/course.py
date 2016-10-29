@@ -308,7 +308,7 @@ def getQuestionChance():
     authorId = request.args.get("authorId")
     if not authorId:
         abort(400)
-    trade = TradeRecord.query.filter(TradeRecord.authorId == authorId,TradeRecord.userId == g.user.id, TradeRecord.deletedAt == None).first()
+    trade = TradeRecord.query.filter(TradeRecord.authorId == authorId,TradeRecord.userId == g.user.id, TradeRecord.orderStatus == 1, TradeRecord.deletedAt == None).first()
     if trade:
         return (jsonify(trade.json()),200)    
     return (jsonify(SimpleResult(-1,"没有提问权限").json()),400)
