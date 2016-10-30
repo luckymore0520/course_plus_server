@@ -123,7 +123,7 @@ def publishFeedback():
     feedBack.userId = g.user.id
     db.session.add(feedBack)
     db.session.commit()
-    return make_response(jsonify(SimpleResult(0,"发布成功").json()), 405)
+    return make_response(jsonify(SimpleResult(0,"发布成功").json()), 200)
  
     
 
