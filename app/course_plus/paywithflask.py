@@ -40,7 +40,7 @@ def do_charge():
     db.session.add(record)
     db.session.commit() 
     extra = dict(
-        success_url='http://127.0.0.1:3000/public/pay.html?id='+str(record.id),
+        success_url='http://118.178.137.101:3000/public/pay.html?id='+str(record.id),
         # cancel_url='http://www.yourdomain.com/cancel'
     )   
     subject = ""
@@ -58,8 +58,8 @@ def do_charge():
         params['body'] = body
         params['extra'] = extra
     print params
-    #pingpp.api_key = 'sk_live_DiX5WTmDer5G8mz5uLDinvvH'
-    pingpp.api_key = 'sk_test_OWrPOCPm94q5j5qXLO5e1OO4'
+    pingpp.api_key = 'sk_live_DiX5WTmDer5G8mz5uLDinvvH'
+    # pingpp.api_key = 'sk_test_OWrPOCPm94q5j5qXLO5e1OO4'
     pingpp.private_key_path = 'pingpp_rsa_private_key.pem'
     response_charge = pingpp.Charge.create(api_key=pingpp.api_key, **params)
     print 'Response_Charge: ' + str(response_charge)
