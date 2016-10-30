@@ -3,11 +3,13 @@ from flask import Flask, jsonify, abort, make_response, request , url_for
 from flask.ext.restful import Api, Resource, reqparse , fields, marshal
 from flask.ext.httpauth import HTTPBasicAuth
 from flask.ext.sqlalchemy import SQLAlchemy
+from flask_cors import CORS, cross_origin
 from app import config
 from qiniu import Auth
 from qiniu import BucketManager
 
 app = Flask(__name__)
+cors = CORS(app, resources={r"/api/*": {"origins": "http://118.178.137.101:3000"}})
 api = Api(app)
 app.config['SQLALCHEMY_DATABASE_URI'] =  config.DB_URL
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True

@@ -12,3 +12,4 @@ passlib==1.6.1
 qiniu
 requests
 pingpp
+flask-cors
