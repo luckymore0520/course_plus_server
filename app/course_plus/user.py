@@ -8,7 +8,7 @@ from sqlalchemy.orm import relationship, backref
 from passlib.apps import custom_app_context as pwd_context
 from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
-from app import app,db,api,auth,getUrlOfKey
+from app import app,db,api,auth,getUrlOfKey,getTokenOfKey
 import json
 import datetime
 import requests
@@ -134,6 +134,15 @@ def resetPassword():
         db.session.add(user)
         db.session.commit()
     return (jsonify(SimpleResult(0,"重置成功").json()),200)
+
+
+@app.route('/api/web/file/getFileToken', methods=['GET'])
+def getFileToken():
+    key = request.args.get("key")
+    if not key:
+        abort(400)
+    token = getTokenOfKey(key)
+    return (jsonify(SimpleResult(0,token).json()),200)
 
 
 

@@ -34,6 +34,11 @@ def getUrlOfKey(key):
     print(private_url)
     return private_url
 
+def getTokenOfKey(key):
+    if not key:
+        return ""
+    token = q.upload_token(bucket_name, key, 3600)
+    return token
 
 from app import views
 import course_plus.user
