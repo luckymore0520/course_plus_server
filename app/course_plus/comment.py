@@ -4,7 +4,7 @@ from flask.ext.restful import Api, Resource
 from flask.ext.httpauth import HTTPBasicAuth
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy import ForeignKey
-from app import app,db,api,auth
+from app import app,db,api,auth,getUrlOfKey
 import json
 import datetime
 from simple_result import SimpleResult
@@ -42,7 +42,7 @@ class Comment(db.Model):
             "rootId":self.rootId,
             "replyTime":self.createdAt.strftime('%Y-%m-%d %H:%M:%S'),
             "authorName":author.nickname,
-            "authorIcon":author.icon,
+            "authorIcon":getUrlOfKey(author.icon),
             "authorId":self.userId
         }
 
