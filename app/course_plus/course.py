@@ -376,7 +376,6 @@ def getCourseList():
     courseJsonList = []
     for course in courses:
         courseJsonList.append(course.simpleJson())
-    print(courseJsonList)
     return (json.dumps(courseJsonList),200)
 
 

@@ -57,12 +57,10 @@ def do_charge():
         params['subject'] = subject
         params['body'] = body
         params['extra'] = extra
-    print params
     pingpp.api_key = 'sk_live_DiX5WTmDer5G8mz5uLDinvvH'
     # pingpp.api_key = 'sk_test_OWrPOCPm94q5j5qXLO5e1OO4'
     pingpp.private_key_path = 'pingpp_rsa_private_key.pem'
     response_charge = pingpp.Charge.create(api_key=pingpp.api_key, **params)
-    print 'Response_Charge: ' + str(response_charge)
     return Response(json.dumps(response_charge),
                     mimetype='application/json,charset=UTF-8')
 
