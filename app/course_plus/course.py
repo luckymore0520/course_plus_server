@@ -4,11 +4,10 @@ from flask.ext.restful import Api, Resource
 from flask.ext.httpauth import HTTPBasicAuth
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy import ForeignKey
-from app import app,db,api,getUrlOfKey,auth
+from app import app,db,api,getUrlOfKey,auth,allow_cross_domain
 import json
 import datetime
 from simple_result import SimpleResult
-from flask_cors import CORS, cross_origin
 
 
 class Author(db.Model):
@@ -344,7 +343,7 @@ def getKeyUrl():
     
 
 @app.route('/api/web/course/speciality', methods=['GET'])
-@cross_origin()
+@allow_cross_domain()
 def getSpecialList():
     schools = db.session.query(School).all()
     specialDic = {}
