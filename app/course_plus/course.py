@@ -8,6 +8,7 @@ from app import app,db,api,getUrlOfKey,auth
 import json
 import datetime
 from simple_result import SimpleResult
+from flask_cors import CORS, cross_origin
 
 
 class Author(db.Model):
@@ -343,6 +344,7 @@ def getKeyUrl():
     
 
 @app.route('/api/web/course/speciality', methods=['GET'])
+@cross_origin()
 def getSpecialList():
     schools = db.session.query(School).all()
     specialDic = {}
