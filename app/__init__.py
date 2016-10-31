@@ -6,19 +6,19 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from app import config
 from qiniu import Auth
 from qiniu import BucketManager
-# from functools import wraps
+from functools import wraps
 
-# def allow_cross_domain(fun):
-#     @wraps(fun)
-#     def wrapper_fun(*args, **kwargs):
-#         rst = make_response(fun(*args, **kwargs))
-#         rst.headers['Access-Control-Allow-Origin'] = '*'
-#         rst.headers['Access-Control-Allow-Methods'] = 'PUT,GET,POST,DELETE'
-#         allow_headers = "Referer,Accept,Origin,User-Agent"
-#         rst.headers['Access-Control-Allow-Headers'] = allow_headers
-#         return rst
-#     return wrapper_fun
-
+def allow_cross_domain(fun):
+    @wraps(fun)
+    def wrapper_fun(*args, **kwargs):
+        rst = make_response(fun(*args, **kwargs))
+        rst.headers['Access-Control-Allow-Origin'] = '*'
+        rst.headers['Access-Control-Allow-Methods'] = 'PUT,GET,POST,DELETE'
+        allow_headers = "Referer,Accept,Origin,User-Agent"
+        rst.headers['Access-Control-Allow-Headers'] = allow_headers
+        return rst
+    return wrapper_fun
+    
 app = Flask(__name__)
 api = Api(app)
 app.config['SQLALCHEMY_DATABASE_URI'] =  config.DB_URL
