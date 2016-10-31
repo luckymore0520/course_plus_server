@@ -343,7 +343,7 @@ def getKeyUrl():
     
 
 @app.route('/api/web/course/speciality', methods=['GET'])
-@allow_cross_domain()
+@allow_cross_domain
 def getSpecialList():
     schools = db.session.query(School).all()
     specialDic = {}
