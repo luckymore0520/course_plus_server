@@ -304,6 +304,8 @@ def publishQuestion():
         question.userId = userId
         question.authorId = authorId
         question.topicId = topicId
+        question.createdAt = datetime.datetime.now()
+        question.updatedAt = question.createdAt
         db.session.add(question)
         db.session.commit()
         return (jsonify(SimpleResult(0,"提问成功").json()),200)    
