@@ -24,8 +24,11 @@ def do_charge():
     topicId = request.json.get("topicId")
     amount = request.json.get("amount")
     channel = request.json.get("channel")
-    if not channel or not amount or not topicId:
+    type = request.json.get("type")
+    authorCourseId = request.json.get("authorCourseId")
+    if not channel or not amount or not topicId or not type:
         abort(400)
+    # 如果resourceId为空，authorCourseId为空，则是提问
     params = {"amount":amount,"channel":channel}
     orderno = ''.join(random.sample(string.ascii_letters + string.digits, 8))
     record = TradeRecord()
@@ -37,6 +40,7 @@ def do_charge():
     record.createdAt = datetime.datetime.now()
     record.updatedAt = record.createdAt
     record.orderStatus = 0
+    record.type = type
     db.session.add(record)
     db.session.commit() 
     extra = dict(

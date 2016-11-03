@@ -195,8 +195,13 @@ def getUserInfo():
     user = g.user
     return (jsonify(user.json()),200)
 
-
-
+def getCurrentUser(request):
+    auth = request.authorization
+    if not auth:
+        return None
+    token = auth.username
+    return User.verify_auth_token(token)
+    
 @app.route('/api/user/user/updateUserInfo', methods=['POST'])
 @auth.login_required
 def updateUserInfo():

@@ -53,6 +53,8 @@ def getTokenOfKey(key):
     token = q.upload_token(bucket_name, key, 3600)
     return token
 
+
+
 from app import views
 import course_plus.user
 import course_plus.course
@@ -63,3 +65,4 @@ import config
 @auth.error_handler
 def auth_error():
     return make_response(jsonify({"code":-1,"message":"未登录或token过期"}), 403)
+

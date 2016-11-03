@@ -8,7 +8,7 @@ from app import app,db,api,getUrlOfKey,auth
 import json
 import datetime
 from simple_result import SimpleResult
-
+from user import getCurrentUser
 
 class Author(db.Model):
     __tablename__ = 't_author'
@@ -49,15 +49,29 @@ class Author(db.Model):
     def simpleJson(self):
         return {"name":self.name,"icon":self.actualIcon(),"id":self.id}
 
-    def json(self):
+    def json(self,courseId,user):
         resource = Resource.query.filter(Resource.authorId == self.id).first()
         attachmentId = None
         cost = 0
+        authorCourseId = None
         if resource:
             attachmentId = resource.id
             cost = resource.cost
-        return {"name":self.name,"avatar":self.actualAvatar(),"id":self.id,"description":self.introduction,"attachmentId":attachmentId,"resourceCost":cost,"contactCost":self.contactCost,"courses":self.courses()}
-
+        if courseId:
+            authorCourse = AuthorCourse.query.filter(AuthorCourse.courseId == courseId, AuthorCourse.authorId == self.id).first()
+            if authorCourse:
+                authorCourseId = authorCourse.id
+        if authorCourse is not None:
+            #是否买断
+            trade = None
+            if user:
+                print(user)
+                trade = TradeRecord.query.filter(TradeRecord.authorCourseId == authorCourse.id, TradeRecord.userId == user.id, TradeRecord.orderStatus == 1, TradeRecord.type == 4).first()
+            if not trade:
+                return {"authorCourseId":authorCourseId,"name":self.name,"avatar":self.actualAvatar(),"id":self.id,"description":self.introduction,"attachmentId":attachmentId,"resourceCost":cost,"contactCost":self.contactCost,"courses":self.courses()}
+            return {"qqGroupId":authorCourse.qqGroupId,"inviteCode":trade.orderNo,"authorCourseId":authorCourseId,"name":self.name,"avatar":self.actualAvatar(),"id":self.id,"description":self.introduction,"attachmentId":attachmentId,"resourceCost":cost,"contactCost":self.contactCost,"courses":self.courses()}
+        else:
+            return {"name":self.name,"avatar":self.actualAvatar(),"id":self.id,"description":self.introduction,"attachmentId":attachmentId,"resourceCost":cost,"contactCost":self.contactCost,"courses":self.courses()}
     
 
 class School(db.Model):
@@ -148,7 +162,7 @@ class Course(db.Model):
             authors.append(author.simpleJson())
         return authors
     
-    def detail_authors(self):
+    def detail_authors(self,user):
         topics = Topic.query.filter(Topic.courseId == self.id)
         author_ids = []
         for topic in topics:
@@ -157,10 +171,10 @@ class Course(db.Model):
         authors = []
         for authorId in author_ids:
             author = Author.query.get(authorId)
-            authors.append(author.json())
+            authors.append(author.json(self.id,user))
         return authors
 
-    def json(self):
+    def json(self,user):
         return {"id":self.id,
         "name":self.name,
         "topicNum":self.topicNum(),
@@ -171,7 +185,7 @@ class Course(db.Model):
          "description":self.introduction,
         "resources":self.resources(),
         "topics":self.topics(),
-        "authors":self.detail_authors(),
+        "authors":self.detail_authors(user),
         "cover":self.actualCover()
         }
 
@@ -201,11 +215,15 @@ class Topic(db.Model):
     deletedAt = db.Column(db.DateTime)
     courseId = db.Column(db.Integer, ForeignKey('t_course.id'))
     authorId = db.Column(db.Integer, ForeignKey('t_author.id'))
+    weight = db.Column(db.Integer)
+    cost = db.Column(db.Integer)
+    qqGroupId = db.Column(db.String(16))
+    type = db.Column(db.Integer)  #1 知识点 2课
     bodys = relationship("TopicBody", backref = "Topic")
     comments = relationship("Comment", backref = "Topic")
 
     def json(self):
-        return {"name":self.name,"authorId":self.authorId,"id":self.id}
+        return {"name":self.name,"authorId":self.authorId,"id":self.id,"weight":self.weight,"qqGroupId":self.qqGroupId,"cost":self.cost}
 
 
 class TopicBody(db.Model):
@@ -217,11 +235,44 @@ class TopicBody(db.Model):
     updatedAt = db.Column(db.DateTime)
     deletedAt = db.Column(db.DateTime)
     topicId = db.Column(db.Integer, ForeignKey('t_topic.id'))
+    def json(self,user):
+        topic = Topic.query.get(self.topicId)
+        if user is not None:
+            if topic.type == 2: #是门课程
+                # 需要先检查有没有被买断
+                courseId = topic.courseId
+                authorId = topic.authorId
+                authorCourse = AuthorCourse.query.filter(AuthorCourse.courseId == courseId, AuthorCourse.authorId == authorId).first()
+                trade = None
+                # 如果存在这门课，检查有没有被买断
+                if authorCourse:
+                    trade = TradeRecord.query.filter(TradeRecord.authorCourseId == authorCourse.id, TradeRecord.userId == user.id, TradeRecord.orderStatus == 1, TradeRecord.type == 4).first()
+                if trade:
+                    return {"id":self.id,"type":topic.type,"content":self.content,"qqGroupId":authorCourse.qqGroupId,"inviteCode":trade.orderNo,"cost":topic.cost}
+                else:
+                    #检查有没有购买这节课时
+                    trade = TradeRecord.query.filter(TradeRecord.topicId == self.topicId, TradeRecord.userId == user.id, TradeRecord.orderStatus == 1, TradeRecord.type == 3).first()
+                    if trade:
+                        return {"id":self.id,"type":topic.type,"content":self.content,"qqGroupId":topic.qqGroupId,"inviteCode":trade.orderNo,"cost":topic.cost}
+                    else:
+                        return {"id":self.id,"type":topic.type,"content":self.content,"cost":topic.cost}
+            else:
+                return {"id":self.id,"type":topic.type,"content":self.content,"cost":topic.cost}
+        else:
+            return {"id":self.id,"type":topic.type,"content":self.content,"cost":topic.cost}
 
-    def json(self):
-        return {"id":self.id,"type":self.type,"content":self.content}
 
-
+    
+class AuthorCourse(db.Model):
+    __tablename__ = 't_author__course'
+    id = db.Column(db.Integer, primary_key=True)
+    createdAt = db.Column(db.DateTime)
+    updatedAt = db.Column(db.DateTime)
+    deletedAt = db.Column(db.DateTime)
+    qqGroupId = db.Column(db.String(16))
+    cost = db.Column(db.Integer)
+    courseId = db.Column(db.Integer, ForeignKey('t_course.id'))
+    authorId = db.Column(db.Integer, ForeignKey('t_author.id'))
 
 
 class TradeRecord(db.Model):
@@ -236,14 +287,16 @@ class TradeRecord(db.Model):
     attachmentId = db.Column(db.Integer, ForeignKey('t_attachment.id'))
     topicId = db.Column(db.Integer, ForeignKey('t_topic.id'))
     userId = db.Column(db.Integer, ForeignKey('t_user.id'))
-    
+    authorCourseId = db.Column(db.Integer, ForeignKey('t_author__course.id'))
+    type = db.Column(db.Integer)  # 资料下载  2 提问 3 课程购买 4 课时买断
+
     def json(self):    
         attachmentUrl = ""
         if self.attachmentId:
             attachment = Resource.query.get(self.attachmentId)
             attachmentUrl = getUrlOfKey(attachment.key)
         topic = Topic.query.get(self.topicId)
-        return {"id":self.id,"topicId":self.topicId,"courseId":topic.courseId,"attachmentUrl":attachmentUrl,"authorId":topic.authorId,"attachmentId":self.attachmentId}
+        return {"type":self.type,"id":self.id,"authorCourseId":self.authorCourseId,"topicId":self.topicId,"courseId":topic.courseId,"attachmentUrl":attachmentUrl,"authorId":topic.authorId,"attachmentId":self.attachmentId}
     
 
 class Resource(db.Model):
@@ -383,6 +436,7 @@ def getCourseList():
 
 @app.route('/api/web/course/courseDetail', methods=['GET'])
 def getCourseDetail():
+    user = getCurrentUser(request)
     course_id = request.args.get("id")
     if not course_id:
         abort(400)
@@ -390,19 +444,19 @@ def getCourseDetail():
     if not course:
         return (jsonify(SimpleResult(-1,"课程不存在").json()),400)
     else:
-        return (jsonify(course.json()),200)
+        return (jsonify(course.json(user)),200)
     
 
 @app.route('/api/web/course/topicDetail', methods=['GET'])
 def getTopicBody():
     topic_id = request.args.get("id")
+    user = getCurrentUser(request)
     if not topic_id:
         abort(400)
-    topic_body = TopicBody.query.filter(TopicBody.topicId == topic_id).first()
+    topic_body = TopicBody.query.filter(TopicBody.topicId == topic_id).first()            
     if not topic_body:
         return (jsonify(SimpleResult(-1,"知识点不存在").json()),400)
-    else:
-        return (jsonify(topic_body.json()),200)
+    return (jsonify(topic_body.json(user)),200)
 
 
 
