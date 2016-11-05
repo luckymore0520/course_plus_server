@@ -37,6 +37,7 @@ def do_charge():
     record.attachmentId = resourceId
     record.cost = amount
     record.topicId = topicId
+    record.authorCourseId = authorCourseId
     record.createdAt = datetime.datetime.now()
     record.updatedAt = record.createdAt
     record.orderStatus = 0
