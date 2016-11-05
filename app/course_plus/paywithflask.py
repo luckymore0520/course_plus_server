@@ -50,10 +50,14 @@ def do_charge():
     )   
     subject = ""
     body = record.id
-    if resourceId:
+    if type == 1:
         subject = "course+资料下载"
-    else:
+    if type == 2:
         subject = "咨询费用"
+    if type == 3:
+        subject = "课时购买"
+    if type == 4:
+        subject = "课程买断"
     if isinstance(params, dict):
         params['order_no'] = orderno
         params['app'] = dict(id='app_jnz9COjH08O4vLaD')
