@@ -68,8 +68,8 @@ class Author(db.Model):
                 print(user)
                 trade = TradeRecord.query.filter(TradeRecord.authorCourseId == authorCourse.id, TradeRecord.userId == user.id, TradeRecord.orderStatus == 1, TradeRecord.type == 4).first()
             if not trade:
-                return {"authorCourseId":authorCourseId,"name":self.name,"avatar":self.actualAvatar(),"id":self.id,"description":self.introduction,"attachmentId":attachmentId,"resourceCost":cost,"contactCost":self.contactCost,"courses":self.courses()}
-            return {"qqGroupId":authorCourse.qqGroupId,"inviteCode":trade.orderNo,"authorCourseId":authorCourseId,"name":self.name,"avatar":self.actualAvatar(),"id":self.id,"description":self.introduction,"attachmentId":attachmentId,"resourceCost":cost,"contactCost":self.contactCost,"courses":self.courses()}
+                return {"courseCost":authorCourse.cost,"authorCourseId":authorCourseId,"name":self.name,"avatar":self.actualAvatar(),"id":self.id,"description":self.introduction,"attachmentId":attachmentId,"resourceCost":cost,"contactCost":self.contactCost,"courses":self.courses()}
+            return {"courseCost":authorCourse.cost,"qqGroupId":authorCourse.qqGroupId,"inviteCode":trade.orderNo,"authorCourseId":authorCourseId,"name":self.name,"avatar":self.actualAvatar(),"id":self.id,"description":self.introduction,"attachmentId":attachmentId,"resourceCost":cost,"contactCost":self.contactCost,"courses":self.courses()}
         else:
             return {"name":self.name,"avatar":self.actualAvatar(),"id":self.id,"description":self.introduction,"attachmentId":attachmentId,"resourceCost":cost,"contactCost":self.contactCost,"courses":self.courses()}
     
