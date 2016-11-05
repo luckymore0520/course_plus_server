@@ -296,8 +296,16 @@ class TradeRecord(db.Model):
             attachment = Resource.query.get(self.attachmentId)
             attachmentUrl = getUrlOfKey(attachment.key)
         topic = Topic.query.get(self.topicId)
-        return {"type":self.type,"id":self.id,"authorCourseId":self.authorCourseId,"topicId":self.topicId,"courseId":topic.courseId,"attachmentUrl":attachmentUrl,"authorId":topic.authorId,"attachmentId":self.attachmentId}
-    
+        #课程买断
+        if self.type == 4:
+            authorCourse = AuthorCourse.query.get(self.authorCourseId)
+            return {"qqGroupId":authorCourse.qqGroupId,"inviteCode":self.orderNo,"type":self.type,"id":self.id,"authorCourseId":self.authorCourseId,"topicId":self.topicId,"courseId":topic.courseId,"attachmentUrl":attachmentUrl,"authorId":topic.authorId,"attachmentId":self.attachmentId}            
+        #课时购买
+        if self.type == 3:
+            return {"qqGroupId":topic.qqGroupId,"inviteCode":self.orderNo,"type":self.type,"id":self.id,"authorCourseId":self.authorCourseId,"topicId":self.topicId,"courseId":topic.courseId,"attachmentUrl":attachmentUrl,"authorId":topic.authorId,"attachmentId":self.attachmentId}
+        else:
+            return {"type":self.type,"id":self.id,"authorCourseId":self.authorCourseId,"topicId":self.topicId,"courseId":topic.courseId,"attachmentUrl":attachmentUrl,"authorId":topic.authorId,"attachmentId":self.attachmentId}
+      
 
 class Resource(db.Model):
     __tablename__ = 't_attachment'
