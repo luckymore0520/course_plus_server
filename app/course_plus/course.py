@@ -427,15 +427,15 @@ def getCourseList():
     speciality_id = request.args.get("specialityId")
     if not page or not limit:
         abort(400)
-    if not speciality_id and not key:
-        abort(400)
     courses = []
     page = int(page)
     limit = int(limit)
     if key:
         courses = db.session.query(Course).filter(Course.deletedAt == None,Course.name.like("%"+key+"%")).limit(limit).offset(limit * (page-1))
-    else:
+    elif speciality_id:
         courses = db.session.query(Course).filter(Course.deletedAt == None,Course.specialityId == speciality_id).limit(limit).offset(limit * (page-1))
+    else:
+        courses = db.session.query(Course).filter(Course.deletedAt == None).limit(limit).offset(limit * (page-1))
     courseJsonList = []
     for course in courses:
         courseJsonList.append(course.simpleJson())
