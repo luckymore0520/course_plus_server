@@ -242,7 +242,7 @@ class TopicBody(db.Model):
                 # 需要先检查有没有被买断
                 courseId = topic.courseId
                 authorId = topic.authorId
-                authorCourse = AuthorCourse.query.filter(AuthorCourse.courseId == courseId, AuthorCourse.authorId == authorId).first()
+                authorCourse = AuthorCourse.query.filter(AuthorCourse.courseId == courseId, AuthorCourse.authorId == authorId, AuthorCourse.deletedAt == None).first()
                 trade = None
                 # 如果存在这门课，检查有没有被买断
                 if authorCourse:
@@ -398,7 +398,7 @@ def getKeyUrl():
     key = attachment.key
     if attachment.cost == 0:
         return (jsonify(SimpleResult(0,getUrlOfKey(key)).json()),200)
-    trade = db.session.query(TradeRecord).filter(TradeRecord.attachmentId == id, TradeRecord.userId == g.user.id, TradeRecord.orderStatus == 1).first()
+    trade = db.session.query(TradeRecord).filter(TradeRecord.deletedAt == None,TradeRecord.attachmentId == id, TradeRecord.userId == g.user.id, TradeRecord.orderStatus == 1).first()
     if not trade:
         return (jsonify(SimpleResult(-1,"该资料并未被购买").json()),400)
     return (jsonify(SimpleResult(0,getUrlOfKey(key)).json()),200)
@@ -407,12 +407,12 @@ def getKeyUrl():
 
 @app.route('/api/web/course/speciality', methods=['GET'])
 def getSpecialList():
-    schools = db.session.query(School).all()
+    schools = db.session.query(School).filter(School.deletedAt == None)
     specialDic = {}
     for school in schools:
         schoolDic = {"id":school.id}
         specialityJsonList = []
-        specialityList = Speciality.query.filter_by(schoolId = school.id)
+        specialityList =  db.session.query(Speciality).filter(Speciality.schoolId == school.id, Speciality.deletedAt == None)  
         for speciality in specialityList:
             specialityJsonList.append(speciality.json())
         schoolDic["specialities"] = specialityJsonList
@@ -433,9 +433,9 @@ def getCourseList():
     page = int(page)
     limit = int(limit)
     if key:
-        courses = db.session.query(Course).filter(Course.name.like("%"+key+"%")).limit(limit).offset(limit * (page-1))
+        courses = db.session.query(Course).filter(Course.deletedAt == None,Course.name.like("%"+key+"%")).limit(limit).offset(limit * (page-1))
     else:
-        courses = db.session.query(Course).filter(Course.specialityId == speciality_id).limit(limit).offset(limit * (page-1))
+        courses = db.session.query(Course).filter(Course.deletedAt == None,Course.specialityId == speciality_id).limit(limit).offset(limit * (page-1))
     courseJsonList = []
     for course in courses:
         courseJsonList.append(course.simpleJson())
