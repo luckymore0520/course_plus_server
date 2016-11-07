@@ -110,11 +110,11 @@ class Course(db.Model):
     resources = relationship("Resource", backref = "Course")
 
     def topicNum(self):
-        count = Topic.query.filter(Topic.courseId == self.id).count()
+        count = Topic.query.filter(Topic.courseId == self.id,Topic.deletedAt == None).count()
         return count
 
     def topics(self):
-        topics = Topic.query.filter(Topic.courseId == self.id)
+        topics = Topic.query.filter(Topic.courseId == self.id,Topic.deletedAt == None)
         topicsDic = {}
         for topic in topics:
             authorId = topic.authorId
@@ -128,12 +128,12 @@ class Course(db.Model):
         return getUrlOfKey(self.cover)
 
     def resourceNum(self):
-        count = Resource.query.filter(Resource.courseId == self.id).count()
+        count = Resource.query.filter(Resource.courseId == self.id, Resource.deletedAt == None).count()
         return count
 
     def resources(self):
         resourcesJson = []
-        resources = Resource.query.filter(Resource.courseId == self.id)
+        resources = Resource.query.filter(Resource.courseId == self.id, Resource.deletedAt == None)
         for resource in resources:
             resourcesJson.append(resource.json())
         return resourcesJson
@@ -151,7 +151,7 @@ class Course(db.Model):
         return ""
     
     def authors(self):
-        topics = Topic.query.filter(Topic.courseId == self.id)
+        topics = Topic.query.filter(Topic.courseId == self.id, Topic.deletedAt == None)
         author_ids = []
         for topic in topics:
             if topic.authorId not in author_ids :
@@ -163,7 +163,7 @@ class Course(db.Model):
         return authors
     
     def detail_authors(self,user):
-        topics = Topic.query.filter(Topic.courseId == self.id)
+        topics = Topic.query.filter(Topic.courseId == self.id,Topic.deletedAt == None)
         author_ids = []
         for topic in topics:
             if topic.authorId not in author_ids :
@@ -461,7 +461,7 @@ def getTopicBody():
     user = getCurrentUser(request)
     if not topic_id:
         abort(400)
-    topic_body = TopicBody.query.filter(TopicBody.topicId == topic_id).first()            
+    topic_body = TopicBody.query.filter(TopicBody.topicId == topic_id, TopicBody.deletedAt == None).first()            
     if not topic_body:
         return (jsonify(SimpleResult(-1,"知识点不存在").json()),400)
     return (jsonify(topic_body.json(user)),200)
