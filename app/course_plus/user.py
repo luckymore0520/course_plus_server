@@ -93,6 +93,7 @@ def register():
     phone = request.json.get("phone")
     password = request.json.get("password")
     verifyCode = request.json.get("verifyCode")
+    qq = request.json.get("qq")
     if phone is None or password is None or verifyCode is None:
         abort(400)
     params = {'phonenumber': phone, 'verifyCode': verifyCode}
@@ -111,9 +112,10 @@ def register():
     user.gender = 3
     user.nickname = "用户" + phone
     user.enable = 1
+    user.qq = qq        
     db.session.add(user)
     db.session.commit()
-    token = user.generate_auth_token(6000)
+    token = user.generate_auth_token(36000)
     g.user = user
     return (jsonify(user.json()),200)
 
@@ -168,7 +170,7 @@ def login():
     if not user or not user.verify_password(password):
         return (jsonify(SimpleResult(-1,"账户名或密码错误").json()),400)
     else:
-        token = user.generate_auth_token(600)
+        token = user.generate_auth_token(36000)
         g.user = user
         return (jsonify(user.json()),200)
 
