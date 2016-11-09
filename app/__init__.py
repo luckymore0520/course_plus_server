@@ -44,7 +44,7 @@ def getUrlOfKey(key):
         return ""
     base_url = 'http://%s/%s' % (bucket_domain, key)
     #可以设置token过期时间
-    private_url = q.private_download_url(base_url, expires=3600)
+    private_url = q.private_download_url(base_url, expires=3600000)
     return private_url
 
 def getTokenOfKey(key):
