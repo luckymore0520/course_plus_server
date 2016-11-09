@@ -79,7 +79,7 @@ def send_auth_code():
     if phone is None:
         abort(400)
     params = {'phonenumber': phone, 'coursePlus': 1}
-    r = requests.post("http://www.mebox.wiki/index.php/Home/SMS/sendCode", data=params).json()
+    r = requests.post("http://www.mebox.top/index.php/Home/SMS/sendCode", data=params).json()
     if r["result"] == 1:
         return (jsonify(SimpleResult(1,"发送成功").json()),200)
     else:
@@ -96,7 +96,7 @@ def register():
     if phone is None or password is None or verifyCode is None:
         abort(400)
     params = {'phonenumber': phone, 'verifyCode': verifyCode}
-    r = requests.post("http://www.mebox.wiki/index.php/Home/SMS/verifyCode", data=params).json()
+    r = requests.post("http://www.mebox.top/index.php/Home/SMS/verifyCode", data=params).json()
     if r["result"] == 0:
         return (jsonify(SimpleResult(-1,"验证失败").json()),400)
     # 验证验证码
