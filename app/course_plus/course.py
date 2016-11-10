@@ -349,16 +349,23 @@ def publishQuestion():
     if not authorId or not content or not userEmail or not topicId: 
         abort(400)
     authorId = int(authorId)
-    trade_list = TradeRecord.query.filter(TradeRecord.attachmentId == None, TradeRecord.userId == g.user.id, TradeRecord.orderStatus == 1, TradeRecord.deletedAt == None)
     targetTrade = None
-    for trade in trade_list:
-        topic = Topic.query.get(trade.topicId)
-        if topic.authorId == authorId:
-            targetTrade = trade 
-            break
+    authorCourseList = db.session.query(AuthorCourse).filter(AuthorCourse.deletedAt == None, AuthorCourse.authorId == authorId)
+    for authorCourse in authorCourseList:
+        targetTrade = db.session.query(TradeRecord).filter(TradeRecord.deletedAt == None,TradeRecord.authorCourseId == authorCourse.id, TradeRecord.userId == g.user.id, TradeRecord.orderStatus == 1).first()
+    print(targetTrade)
+    if not targetTrade:
+        trade_list = TradeRecord.query.filter(TradeRecord.type == 2, TradeRecord.attachmentId == None, TradeRecord.userId == g.user.id, TradeRecord.orderStatus == 1, TradeRecord.deletedAt == None)
+        for trade in trade_list:
+            topic = Topic.query.get(trade.topicId)
+            if topic.authorId == authorId:
+                targetTrade = trade 
+                break
+    print(targetTrade)
     if targetTrade:
-        targetTrade.deletedAt = datetime.datetime.now()
-        db.session.add(targetTrade)
+        if targetTrade.type == 2:
+            targetTrade.deletedAt = datetime.datetime.now()
+            db.session.add(targetTrade)
         question = Question()
         question.content = content
         question.userEmail = userEmail
@@ -379,6 +386,12 @@ def getQuestionChance():
     if not authorId:
         abort(400)
     authorId = int(authorId)
+    # 这里加个逻辑，如果课程买断也直接返回
+    authorCourseList = db.session.query(AuthorCourse).filter(AuthorCourse.deletedAt == None, AuthorCourse.authorId == authorId)
+    for authorCourse in authorCourseList:
+        trade = db.session.query(TradeRecord).filter(TradeRecord.deletedAt == None,TradeRecord.authorCourseId == authorCourse.id, TradeRecord.userId == g.user.id, TradeRecord.orderStatus == 1).first()
+        if trade:
+            return (jsonify(trade.json()),200)    
     trade_list = TradeRecord.query.filter(TradeRecord.attachmentId == None, TradeRecord.userId == g.user.id, TradeRecord.orderStatus == 1, TradeRecord.deletedAt == None)
     for trade in trade_list:
         topic = Topic.query.get(trade.topicId)
@@ -398,7 +411,15 @@ def getKeyUrl():
     key = attachment.key
     if attachment.cost == 0:
         return (jsonify(SimpleResult(0,getUrlOfKey(key)).json()),200)
-    trade = db.session.query(TradeRecord).filter(TradeRecord.deletedAt == None,TradeRecord.attachmentId == id, TradeRecord.userId == g.user.id, TradeRecord.orderStatus == 1).first()
+    # 这里加个逻辑，如果课程买断也直接返回
+    authorId = attachment.authorId
+    courseId = attachment.courseId
+    authorCourse = db.session.query(AuthorCourse).filter(AuthorCourse.deletedAt == None, AuthorCourse.authorId == authorId, AuthorCourse.courseId == courseId).first()
+    if authorCourse:
+        trade = db.session.query(TradeRecord).filter(TradeRecord.deletedAt == None,TradeRecord.authorCourseId == authorCourse.id, TradeRecord.userId == g.user.id, TradeRecord.orderStatus == 1).first()
+        if trade:
+            return (jsonify(SimpleResult(0,getUrlOfKey(key)).json()),200)
+    trade = db.session.query(TradeRecord).filter(TradeRecord.type == 1, TradeRecord.deletedAt == None,TradeRecord.attachmentId == id, TradeRecord.userId == g.user.id, TradeRecord.orderStatus == 1).first()
     if not trade:
         return (jsonify(SimpleResult(-1,"该资料并未被购买").json()),400)
     return (jsonify(SimpleResult(0,getUrlOfKey(key)).json()),200)
