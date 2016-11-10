@@ -414,8 +414,14 @@ def getKeyUrl():
     # 这里加个逻辑，如果课程买断也直接返回
     authorId = attachment.authorId
     courseId = attachment.courseId
-    authorCourse = db.session.query(AuthorCourse).filter(AuthorCourse.deletedAt == None, AuthorCourse.authorId == authorId, AuthorCourse.courseId == courseId).first()
-    if authorCourse:
+    authorCourseList = None
+    # 也就是资料没有courseId，只有authorId，应该是单独这门作者的
+    if not courseId:
+        # 这里有个逻辑漏洞，但是目前只能这么处理
+        authorCourseList = db.session.query(AuthorCourse).filter(AuthorCourse.deletedAt == None, AuthorCourse.authorId == authorId)
+    if not authorId:
+        authorCourseList = db.session.query(AuthorCourse).filter(AuthorCourse.deletedAt == None, AuthorCourse.courseId == courseId)
+    for authorCourse in authorCourseList:     
         trade = db.session.query(TradeRecord).filter(TradeRecord.deletedAt == None,TradeRecord.authorCourseId == authorCourse.id, TradeRecord.userId == g.user.id, TradeRecord.orderStatus == 1).first()
         if trade:
             return (jsonify(SimpleResult(0,getUrlOfKey(key)).json()),200)
