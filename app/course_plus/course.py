@@ -166,9 +166,8 @@ class Course(db.Model):
     def orderCount(self):
         topics = Topic.query.filter(Topic.courseId == self.id,Topic.deletedAt == None)
         count = self.id % 10
-        for topic in topics:
-            tradeList = TradeRecord.query.filter(TradeRecord.topicId == topic.id)
-            count = count + tradeList.count()
+        tradeList = TradeRecord.query.filter(TradeRecord.courseId == self.id)
+        count = count + tradeList.count()
         return count
 
     def detail_authors(self,user):
@@ -295,6 +294,7 @@ class TradeRecord(db.Model):
     updatedAt = db.Column(db.DateTime)
     deletedAt = db.Column(db.DateTime)
     cost = db.Column(db.Integer)
+    courseId = db.Column(db.Integer, ForeignKey('t_course.id'))
     attachmentId = db.Column(db.Integer, ForeignKey('t_attachment.id'))
     topicId = db.Column(db.Integer, ForeignKey('t_topic.id'))
     userId = db.Column(db.Integer, ForeignKey('t_user.id'))
