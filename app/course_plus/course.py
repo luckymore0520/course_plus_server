@@ -41,10 +41,10 @@ class Author(db.Model):
 
 
     def actualIcon(self):
-        return (self.icon,1)
+        return getKeyUrl(self.icon)
     
     def actualAvatar(self):
-        return (self.avatar)
+        return getKeyUrl(self.avatar)
 
     def simpleJson(self):
         return {"name":self.name,"icon":self.actualIcon(),"id":self.id}
