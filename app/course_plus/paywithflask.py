@@ -42,7 +42,7 @@ def do_charge():
     record.updatedAt = record.createdAt
     record.orderStatus = 0
     record.type = type
-    topic = Topic.query.get(topicId)
+    topic = Topic.query.get(int(topicId))
     record.courseId = topic.courseId
     db.session.add(record)
     db.session.commit() 
