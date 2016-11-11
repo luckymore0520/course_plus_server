@@ -162,6 +162,15 @@ class Course(db.Model):
             authors.append(author.simpleJson())
         return authors
     
+
+    def orderCount(self):
+        topics = Topic.query.filter(Topic.courseId == self.id,Topic.deletedAt == None)
+        count = self.id % 10
+        for topic in topics:
+            tradeList = TradeRecord.query.filter(TradeRecord.topicId == topic.id)
+            count = count + tradeList.count()
+        return count
+
     def detail_authors(self,user):
         topics = Topic.query.filter(Topic.courseId == self.id,Topic.deletedAt == None)
         author_ids = []
@@ -186,7 +195,8 @@ class Course(db.Model):
         "resources":self.resources(),
         "topics":self.topics(),
         "authors":self.detail_authors(user),
-        "cover":self.actualCover()
+        "cover":self.actualCover(),
+        "orderCount":self.orderCount()
         }
 
     def simpleJson(self):
@@ -198,7 +208,8 @@ class Course(db.Model):
         "specialityName":self.specialityName(),
         "specialityId":self.specialityId,
         "authors":self.authors(),
-        "cover":self.actualCover()
+        "cover":self.actualCover(),
+        "orderCount":self.orderCount()
         }
     
     def briefJson(self):
