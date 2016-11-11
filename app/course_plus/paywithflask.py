@@ -11,6 +11,7 @@ from course import Resource
 from course import Author
 from course import TradeRecord
 from user import User
+from course import Topic
 from simple_result import SimpleResult
 import datetime
 # channel   alipay_pc_direct   alipay_wap
