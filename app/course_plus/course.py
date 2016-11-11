@@ -41,10 +41,10 @@ class Author(db.Model):
 
 
     def actualIcon(self):
-        return getUrlOfKey(self.icon)
+        return (self.icon,1)
     
     def actualAvatar(self):
-        return getUrlOfKey(self.avatar)
+        return (self.avatar)
 
     def simpleJson(self):
         return {"name":self.name,"icon":self.actualIcon(),"id":self.id}
@@ -294,7 +294,7 @@ class TradeRecord(db.Model):
         attachmentUrl = ""
         if self.attachmentId:
             attachment = Resource.query.get(self.attachmentId)
-            attachmentUrl = getUrlOfKey(attachment.key)
+            attachmentUrl = getUrlOfKey(attachment.key,2)
         topic = Topic.query.get(self.topicId)
         #课程买断
         if self.type == 4:
@@ -410,7 +410,7 @@ def getKeyUrl():
     attachment = Resource.query.get(id)
     key = attachment.key
     if attachment.cost == 0:
-        return (jsonify(SimpleResult(0,getUrlOfKey(key)).json()),200)
+        return (jsonify(SimpleResult(0,getUrlOfKey(key,2)).json()),200)
     # 这里加个逻辑，如果课程买断也直接返回
     authorId = attachment.authorId
     courseId = attachment.courseId
@@ -424,11 +424,11 @@ def getKeyUrl():
     for authorCourse in authorCourseList:     
         trade = db.session.query(TradeRecord).filter(TradeRecord.deletedAt == None,TradeRecord.authorCourseId == authorCourse.id, TradeRecord.userId == g.user.id, TradeRecord.orderStatus == 1).first()
         if trade:
-            return (jsonify(SimpleResult(0,getUrlOfKey(key)).json()),200)
+            return (jsonify(SimpleResult(0,getUrlOfKey(key,2)).json()),200)
     trade = db.session.query(TradeRecord).filter(TradeRecord.type == 1, TradeRecord.deletedAt == None,TradeRecord.attachmentId == id, TradeRecord.userId == g.user.id, TradeRecord.orderStatus == 1).first()
     if not trade:
         return (jsonify(SimpleResult(-1,"该资料并未被购买").json()),400)
-    return (jsonify(SimpleResult(0,getUrlOfKey(key)).json()),200)
+    return (jsonify(SimpleResult(0,getUrlOfKey(key,2)).json()),200)
 
     
 

@@ -36,16 +36,20 @@ q = Auth(access_key, secret_key)
 bucket = BucketManager(q)
 #你要测试的空间， 并且这个key在你空间中存在
 bucket_name = 'course-plus'
-bucket_domain = 'ofjhruj62.bkt.clouddn.com'
-
-def getUrlOfKey(key):
+img_bucket_domain = 'cdn.micourse.org'
+file_bucket_domain = 'download.micourse.org'
+def getUrlOfKey(key, type = 1):
     #有两种方式构造base_url的形式
     if not key:
         return ""
-    base_url = 'http://%s/%s' % (bucket_domain, key)
     #可以设置token过期时间
-    private_url = q.private_download_url(base_url, expires=31536000)
-    return private_url
+    if type == 1:
+        base_url = 'http://%s/%s' % (img_bucket_domain, key)
+        return base_url
+    else:
+        base_url = 'http://%s/%s' % (file_bucket_domain, key)
+        private_url = q.private_download_url(base_url, expires=31536000)
+        return private_url
 
 def getTokenOfKey(key):
     if not key:
