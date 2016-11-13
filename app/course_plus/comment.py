@@ -67,6 +67,22 @@ def postComment():
     db.session.commit() 
     return (jsonify(comment.json()),200)
 
+
+@app.route('/api/user/comment/deleteComment', methods=['GET'])
+@auth.login_required
+def deleteComment():
+    commentId = request.args.get("commentId")
+    user = g.user
+    if not commentId:
+        abort(400)
+    comment = Comment.query.get(commentId)
+    if comment.userId != user.id:
+        return (jsonify(SimpleResult(-1,"不能删除其他人的评论").json()),400)
+    comment.deletedAt = datetime.datetime.now()
+    db.session.add(comment)
+    db.session.commit() 
+    return (jsonify(SimpleResult(0,"删除成功").json()) ,200)
+
 @app.route('/api/web/comment/getCommentList', methods=['GET'])
 def getCommentList():
     page = request.args.get("page")
@@ -79,9 +95,9 @@ def getCommentList():
     page = int(page)
     limit = int(limit)
     if comment_id:
-        comments = db.session.query(Comment).filter(Comment.rootId == comment_id,Comment.topicId == topic_id).limit(limit).offset(limit * (page-1))
+        comments = db.session.query(Comment).filter(Comment.deletedAt == None, Comment.rootId == comment_id,Comment.topicId == topic_id).limit(limit).offset(limit * (page-1))
     else:
-        comments = db.session.query(Comment).filter(Comment.topicId == topic_id,Comment.rootId == None).limit(limit).offset(limit * (page-1))
+        comments = db.session.query(Comment).filter(Comment.deletedAt == None, Comment.topicId == topic_id,Comment.rootId == None).limit(limit).offset(limit * (page-1))
     commentsJsonList = []
     for comment in comments:
         commentsJsonList.append(comment.json())
