@@ -25,7 +25,7 @@ class Comment(db.Model):
 
 
     def replyCount(self):
-        count = Comment.query.filter(Comment.rootId == self.id).count()
+        count = Comment.query.filter(Comment.deletedAt == None, Comment.rootId == self.id).count()
         return count
 
     def author(self):
