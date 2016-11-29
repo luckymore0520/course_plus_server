@@ -284,6 +284,14 @@ class AuthorCourse(db.Model):
     courseId = db.Column(db.Integer, ForeignKey('t_course.id'))
     authorId = db.Column(db.Integer, ForeignKey('t_author.id'))
 
+class DownloadRecord(db.Model):
+    __tablename__ = 't_download_record'
+    id = db.Column(db.Integer, primary_key=True)
+    attachmentId = db.Column(db.Integer, ForeignKey('t_attachment.id'))
+    userId = db.Column(db.Integer, ForeignKey('t_user.id'))
+    createdAt = db.Column(db.DateTime)
+    updatedAt = db.Column(db.DateTime)
+    deletedAt = db.Column(db.DateTime)
 
 class TradeRecord(db.Model):
     __tablename__ = 't_trade'
@@ -420,7 +428,14 @@ def getKeyUrl():
         abort(400)
     attachment = Resource.query.get(id)
     key = attachment.key
+    downloadRecord = DownloadRecord()
+    downloadRecord.userId = g.user.id
+    downloadRecord.createdAt = datetime.datetime().now()
+    downloadRecord.updatedAt = downloadRecord.createdAt
+    downloadRecord.attachmentId = attachment.id
     if attachment.cost == 0:
+        db.session.add(downloadRecord)
+        db.session.commit()
         return (jsonify(SimpleResult(0,getUrlOfKey(key,2)).json()),200)
     # 这里加个逻辑，如果课程买断也直接返回
     authorId = attachment.authorId
@@ -435,10 +450,14 @@ def getKeyUrl():
     for authorCourse in authorCourseList:     
         trade = db.session.query(TradeRecord).filter(TradeRecord.deletedAt == None,TradeRecord.authorCourseId == authorCourse.id, TradeRecord.userId == g.user.id, TradeRecord.orderStatus == 1).first()
         if trade:
+            db.session.add(downloadRecord)
+            db.session.commit()
             return (jsonify(SimpleResult(0,getUrlOfKey(key,2)).json()),200)
     trade = db.session.query(TradeRecord).filter(TradeRecord.type == 1, TradeRecord.deletedAt == None,TradeRecord.attachmentId == id, TradeRecord.userId == g.user.id, TradeRecord.orderStatus == 1).first()
     if not trade:
         return (jsonify(SimpleResult(-1,"该资料并未被购买").json()),400)
+    db.session.add(downloadRecord)
+    db.session.commit()
     return (jsonify(SimpleResult(0,getUrlOfKey(key,2)).json()),200)
 
     
