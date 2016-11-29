@@ -430,7 +430,7 @@ def getKeyUrl():
     key = attachment.key
     downloadRecord = DownloadRecord()
     downloadRecord.userId = g.user.id
-    downloadRecord.createdAt = datetime.datetime().now()
+    downloadRecord.createdAt = datetime.datetime.now()
     downloadRecord.updatedAt = downloadRecord.createdAt
     downloadRecord.attachmentId = attachment.id
     if attachment.cost == 0:
